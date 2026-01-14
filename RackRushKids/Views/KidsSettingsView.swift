@@ -118,6 +118,26 @@ struct KidsSettingsView: View {
                         .background(KidsTheme.surfaceCard)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
+                    
+                    // Parents Section
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("PARENTS")
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                            .foregroundColor(KidsTheme.textMuted)
+                            .tracking(1.5)
+                        
+                        VStack(spacing: 0) {
+                            Link(destination: URL(string: "https://github.com/btltech/RackRushKids/blob/main/PRIVACY_POLICY.md")!) {
+                                SettingsInfoRow(icon: "hand.raised.fill", label: "Privacy Policy", value: "View")
+                            }
+                            Divider().background(Color.white.opacity(0.1))
+                            Link(destination: URL(string: "https://github.com/btltech/RackRushKids/blob/main/SUPPORT.md")!) {
+                                SettingsInfoRow(icon: "envelope.fill", label: "Support", value: "Contact")
+                            }
+                        }
+                        .background(KidsTheme.surfaceCard)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
                 }
                 .padding()
             }

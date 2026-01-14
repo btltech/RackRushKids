@@ -373,6 +373,7 @@ class KidsGameState: ObservableObject {
     
     func cancelQueue() {
         queueTimer?.invalidate()
+        GameCenterService.shared.cancelMatchmaking()  // Stop Game Center matchmaking
         socketService.leave()
         screen = .home
     }
@@ -451,6 +452,7 @@ class KidsGameState: ObservableObject {
     func goHome() {
         timer?.invalidate()
         queueTimer?.invalidate()
+        GameCenterService.shared.cancelMatchmaking()  // Stop any active matchmaking
         socketService.leave()
         screen = .home
     }
@@ -458,6 +460,7 @@ class KidsGameState: ObservableObject {
     func goToMap() {
         timer?.invalidate()
         queueTimer?.invalidate()
+        GameCenterService.shared.cancelMatchmaking()  // Stop any active matchmaking
         socketService.leave()
         screen = .map
     }
