@@ -658,14 +658,28 @@ struct KidsNetworkPartyGameView: View {
     // MARK: - Game Logic
     
     private func setupGame() {
-        myPlayerId = multipeerService.lobbyPlayers.first { $0.isHost == multipeerService.isHosting }?.id ?? ""
-        
-        multipeerService.onMessageReceived = { message, peer in
-            handleMessage(message)
+        // Find my player ID
+        if multipeerService.isHosting {
+            myPlayerId = multipeerService.lobbyPlayers.first { $0.isHost }?.id ?? ""
+        } else {
+            myPlayerId = multipeerService.lobbyPlayers.first { !$0.isHost }?.id ?? ""
         }
         
+        print("🎈 KidsNetworkPartyGame setupGame - myPlayerId: \(myPlayerId), isHosting: \(multipeerService.isHosting)")
+        
+        // Set up message handler FIRST
+        multipeerService.onMessageReceived = { [self] message, peer in
+            DispatchQueue.main.async {
+                self.handleMessage(message)
+            }
+        }
+        
+        // If host, start first round after a delay to ensure all clients are ready
         if multipeerService.isHosting {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { startRound() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                print("🎈 Host starting first round...")
+                self.startRound()
+            }
         }
     }
     
@@ -673,6 +687,8 @@ struct KidsNetworkPartyGameView: View {
         let generated = LocalRackGenerator.shared.generate(letterCount: partyState.letterCount)
         rack = generated.0
         bonuses = generated.1
+        
+        print("🎈 Host generated rack: \(rack.joined(separator: ","))")
         
         multipeerService.send(.roundStart(roundNumber: currentRound, rack: rack, bonuses: bonuses))
         beginRound(rack: rack, bonuses: bonuses)
