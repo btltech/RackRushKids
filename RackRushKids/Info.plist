@@ -49,5 +49,12 @@
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Word Play Kids uses your local network to connect with friends for multiplayer party games.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_rackrush-party._tcp</string>
+		<string>_rackrush-party._udp</string>
+	</array>
 </dict>
 </plist>
