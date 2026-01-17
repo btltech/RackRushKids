@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		051ABC0EEBD024FA5E9B1245 /* LocalDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D15AE25CB86A3CD08EFB54 /* LocalDictionary.swift */; };
+		0CD65F06D34191E1CE26E904 /* KidsStarBurstScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AB47987B5464641C48C8E3 /* KidsStarBurstScene.swift */; };
+		0CE32D66A9F16F43616B4CFC /* KidsPartySetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B058186CA7A449B5224E53F /* KidsPartySetupView.swift */; };
 		1A0001 /* RackRushKidsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1001 /* RackRushKidsApp.swift */; };
 		1A0002 /* KidsContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1002 /* KidsContentView.swift */; };
 		1A0003 /* KidsTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1003 /* KidsTheme.swift */; };
@@ -28,14 +30,32 @@
 		1A0018 /* KidsMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1018 /* KidsMapView.swift */; };
 		1A0019 /* StickerBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1019 /* StickerBookView.swift */; };
 		1A0020 /* IslandNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1020 /* IslandNode.swift */; };
+		1A0021 /* KidsParentalControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1021 /* KidsParentalControlsView.swift */; };
+		1A0022 /* KidsDailyChallengeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1022 /* KidsDailyChallengeManager.swift */; };
+		1A0023 /* KidsAchievementManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1023 /* KidsAchievementManager.swift */; };
+		1A0024 /* KidsCommunityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1024 /* KidsCommunityManager.swift */; };
+		1A0025 /* KidsTTSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1025 /* KidsTTSService.swift */; };
+		1A0026 /* KidsOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1026 /* KidsOnboardingView.swift */; };
+		1A0027 /* KidsSpriteKitBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1027 /* KidsSpriteKitBridge.swift */; };
+		1A0028 /* ConfettiScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1028 /* ConfettiScene.swift */; };
+		1A0029 /* AmbientParticleScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1029 /* AmbientParticleScene.swift */; };
+		1A0030 /* BonusTileEffectScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1030 /* BonusTileEffectScene.swift */; };
 		218F5F2A83155B5EFD32211D /* kids_enable.txt in Resources */ = {isa = PBXBuildFile; fileRef = 934DECA95C43C08D4EEF44C1 /* kids_enable.txt */; };
 		2EEB7EE6441F1F73D413EFDE /* LocalBotPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49F908DD579B978EB39A09D /* LocalBotPlayer.swift */; };
 		3805395B4A38303FEDDD105D /* blocklist.txt in Resources */ = {isa = PBXBuildFile; fileRef = DFFF1E078F1715B23B84FABA /* blocklist.txt */; };
 		4966A5B97014ACED8038637B /* enable.txt in Resources */ = {isa = PBXBuildFile; fileRef = E0F394BB25D250ECCE442889 /* enable.txt */; };
 		4F9F9D4BF190FEAFFD6CBB48 /* kids_definitions.json in Resources */ = {isa = PBXBuildFile; fileRef = 4D59EF97D7C409E7798CAB1A /* kids_definitions.json */; };
 		7E94247BA6DA7183B72F9809 /* LocalScorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5850D7C1014D382106D6050D /* LocalScorer.swift */; };
+		8166B17126D5BB096B864178 /* KidsPartyGameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE27D1E5D5C1261ACA737000 /* KidsPartyGameState.swift */; };
+		847BB05C3B5C93E5B078B181 /* BalloonScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24463BAA2B5B5257038BC610 /* BalloonScene.swift */; };
+		9BB9FA173596EE340C8A58E8 /* KidsPartyViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A5C7A23245CD706623C6B9 /* KidsPartyViews.swift */; };
+		AA858B492DADE70E662A51CD /* KidsScorePopScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32CFB1757154AADF2A3D91D /* KidsScorePopScene.swift */; };
 		B1F583E085FDA44233B82750 /* GameCenterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F605D618567D7D1EA53587 /* GameCenterService.swift */; };
+		C78013627172F0966AE53160 /* RainbowTrailScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = F97DC2CBCBB69D4A4F7D6C23 /* RainbowTrailScene.swift */; };
 		F36D376165E4A3F9063B3F92 /* LocalRackGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EDEFAEF773D43FFB2955079 /* LocalRackGenerator.swift */; };
+		FDFF44EB5DD86AFD3BC298CB /* SparkleTouchScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA7B04C09C47CED54D7ABA7 /* SparkleTouchScene.swift */; };
+		MPSVC001 /* MultipeerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = MPSVCREF /* MultipeerService.swift */; };
+		KNPV001 /* KidsNetworkPartyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = KNPVREF /* KidsNetworkPartyView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,17 +79,37 @@
 		1A1018 /* KidsMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsMapView.swift; sourceTree = "<group>"; };
 		1A1019 /* StickerBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerBookView.swift; sourceTree = "<group>"; };
 		1A1020 /* IslandNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IslandNode.swift; sourceTree = "<group>"; };
+		1A1021 /* KidsParentalControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsParentalControlsView.swift; sourceTree = "<group>"; };
+		1A1022 /* KidsDailyChallengeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsDailyChallengeManager.swift; sourceTree = "<group>"; };
+		1A1023 /* KidsAchievementManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsAchievementManager.swift; sourceTree = "<group>"; };
+		1A1024 /* KidsCommunityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsCommunityManager.swift; sourceTree = "<group>"; };
+		1A1025 /* KidsTTSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsTTSService.swift; sourceTree = "<group>"; };
+		1A1026 /* KidsOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsOnboardingView.swift; sourceTree = "<group>"; };
+		1A1027 /* KidsSpriteKitBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsSpriteKitBridge.swift; sourceTree = "<group>"; };
+		1A1028 /* ConfettiScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiScene.swift; sourceTree = "<group>"; };
+		1A1029 /* AmbientParticleScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientParticleScene.swift; sourceTree = "<group>"; };
+		1A1030 /* BonusTileEffectScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonusTileEffectScene.swift; sourceTree = "<group>"; };
 		1A2001 /* RackRushKids.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RackRushKids.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1B058186CA7A449B5224E53F /* KidsPartySetupView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsPartySetupView.swift; sourceTree = "<group>"; };
+		24463BAA2B5B5257038BC610 /* BalloonScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BalloonScene.swift; sourceTree = "<group>"; };
 		4D59EF97D7C409E7798CAB1A /* kids_definitions.json */ = {isa = PBXFileReference; includeInIndex = 1; path = kids_definitions.json; sourceTree = "<group>"; };
+		51AB47987B5464641C48C8E3 /* KidsStarBurstScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsStarBurstScene.swift; sourceTree = "<group>"; };
 		5850D7C1014D382106D6050D /* LocalScorer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LocalScorer.swift; sourceTree = "<group>"; };
 		68239FFF230380FD49B463F4 /* RackRushKids.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = RackRushKids.entitlements; sourceTree = "<group>"; };
 		73D15AE25CB86A3CD08EFB54 /* LocalDictionary.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LocalDictionary.swift; sourceTree = "<group>"; };
 		934DECA95C43C08D4EEF44C1 /* kids_enable.txt */ = {isa = PBXFileReference; includeInIndex = 1; path = kids_enable.txt; sourceTree = "<group>"; };
 		9EDEFAEF773D43FFB2955079 /* LocalRackGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LocalRackGenerator.swift; sourceTree = "<group>"; };
 		B9F605D618567D7D1EA53587 /* GameCenterService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GameCenterService.swift; sourceTree = "<group>"; };
+		BDA7B04C09C47CED54D7ABA7 /* SparkleTouchScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SparkleTouchScene.swift; sourceTree = "<group>"; };
+		C0A5C7A23245CD706623C6B9 /* KidsPartyViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsPartyViews.swift; sourceTree = "<group>"; };
 		D49F908DD579B978EB39A09D /* LocalBotPlayer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LocalBotPlayer.swift; sourceTree = "<group>"; };
 		DFFF1E078F1715B23B84FABA /* blocklist.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = blocklist.txt; sourceTree = "<group>"; };
 		E0F394BB25D250ECCE442889 /* enable.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = enable.txt; sourceTree = "<group>"; };
+		EE27D1E5D5C1261ACA737000 /* KidsPartyGameState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsPartyGameState.swift; sourceTree = "<group>"; };
+		F32CFB1757154AADF2A3D91D /* KidsScorePopScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsScorePopScene.swift; sourceTree = "<group>"; };
+		F97DC2CBCBB69D4A4F7D6C23 /* RainbowTrailScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RainbowTrailScene.swift; sourceTree = "<group>"; };
+		MPSVCREF /* MultipeerService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MultipeerService.swift; sourceTree = "<group>"; };
+		KNPVREF /* KidsNetworkPartyView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsNetworkPartyView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +145,7 @@
 				1A1009 /* Assets.xcassets */,
 				1A100A /* Info.plist */,
 				B92F1F96D5B43FAF2010798C /* Resources */,
+				1A4008 /* SpriteKit */,
 				68239FFF230380FD49B463F4 /* RackRushKids.entitlements */,
 			);
 			path = RackRushKids;
@@ -122,6 +163,7 @@
 			isa = PBXGroup;
 			children = (
 				1A1004 /* KidsGameState.swift */,
+				EE27D1E5D5C1261ACA737000 /* KidsPartyGameState.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -133,10 +175,15 @@
 				1A1006 /* KidsMatchView.swift */,
 				1A1007 /* KidsResultView.swift */,
 				1A1008 /* KidsSettingsView.swift */,
+				1A1021 /* KidsParentalControlsView.swift */,
 				1A1013 /* KidsEffects.swift */,
 				1A1017 /* KidsTutorialOverlay.swift */,
 				1A1018 /* KidsMapView.swift */,
 				1A1019 /* StickerBookView.swift */,
+				1A1026 /* KidsOnboardingView.swift */,
+				1B058186CA7A449B5224E53F /* KidsPartySetupView.swift */,
+				C0A5C7A23245CD706623C6B9 /* KidsPartyViews.swift */,
+				KNPVREF /* KidsNetworkPartyView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -148,12 +195,17 @@
 				1A1011 /* KidsSocketService.swift */,
 				1A1014 /* HapticManager.swift */,
 				1A1015 /* KidsAudioManager.swift */,
+				1A1025 /* KidsTTSService.swift */,
 				1A1016 /* KidsDictionaryService.swift */,
 				73D15AE25CB86A3CD08EFB54 /* LocalDictionary.swift */,
 				5850D7C1014D382106D6050D /* LocalScorer.swift */,
 				9EDEFAEF773D43FFB2955079 /* LocalRackGenerator.swift */,
 				D49F908DD579B978EB39A09D /* LocalBotPlayer.swift */,
 				B9F605D618567D7D1EA53587 /* GameCenterService.swift */,
+				MPSVCREF /* MultipeerService.swift */,
+				1A1022 /* KidsDailyChallengeManager.swift */,
+				1A1024 /* KidsCommunityManager.swift */,
+				1A1023 /* KidsAchievementManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -164,6 +216,22 @@
 				1A1020 /* IslandNode.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		1A4008 /* SpriteKit */ = {
+			isa = PBXGroup;
+			children = (
+				1A1027 /* KidsSpriteKitBridge.swift */,
+				1A1028 /* ConfettiScene.swift */,
+				1A1029 /* AmbientParticleScene.swift */,
+				1A1030 /* BonusTileEffectScene.swift */,
+				24463BAA2B5B5257038BC610 /* BalloonScene.swift */,
+				F32CFB1757154AADF2A3D91D /* KidsScorePopScene.swift */,
+				51AB47987B5464641C48C8E3 /* KidsStarBurstScene.swift */,
+				F97DC2CBCBB69D4A4F7D6C23 /* RainbowTrailScene.swift */,
+				BDA7B04C09C47CED54D7ABA7 /* SparkleTouchScene.swift */,
+			);
+			path = SpriteKit;
 			sourceTree = "<group>";
 		};
 		B92F1F96D5B43FAF2010798C /* Resources */ = {
@@ -261,11 +329,13 @@
 				1A0006 /* KidsMatchView.swift in Sources */,
 				1A0007 /* KidsResultView.swift in Sources */,
 				1A0008 /* KidsSettingsView.swift in Sources */,
+				1A0021 /* KidsParentalControlsView.swift in Sources */,
 				1A0010 /* KidsWordFilter.swift in Sources */,
 				1A0011 /* KidsSocketService.swift in Sources */,
 				1A0013 /* KidsEffects.swift in Sources */,
 				1A0014 /* HapticManager.swift in Sources */,
 				1A0015 /* KidsAudioManager.swift in Sources */,
+				1A0025 /* KidsTTSService.swift in Sources */,
 				1A0016 /* KidsDictionaryService.swift in Sources */,
 				1A0017 /* KidsTutorialOverlay.swift in Sources */,
 				1A0018 /* KidsMapView.swift in Sources */,
@@ -276,6 +346,24 @@
 				F36D376165E4A3F9063B3F92 /* LocalRackGenerator.swift in Sources */,
 				2EEB7EE6441F1F73D413EFDE /* LocalBotPlayer.swift in Sources */,
 				B1F583E085FDA44233B82750 /* GameCenterService.swift in Sources */,
+				1A0022 /* KidsDailyChallengeManager.swift in Sources */,
+				1A0024 /* KidsCommunityManager.swift in Sources */,
+				1A0026 /* KidsOnboardingView.swift in Sources */,
+				1A0023 /* KidsAchievementManager.swift in Sources */,
+				1A0027 /* KidsSpriteKitBridge.swift in Sources */,
+				1A0028 /* ConfettiScene.swift in Sources */,
+				1A0029 /* AmbientParticleScene.swift in Sources */,
+				1A0030 /* BonusTileEffectScene.swift in Sources */,
+				847BB05C3B5C93E5B078B181 /* BalloonScene.swift in Sources */,
+				AA858B492DADE70E662A51CD /* KidsScorePopScene.swift in Sources */,
+				0CD65F06D34191E1CE26E904 /* KidsStarBurstScene.swift in Sources */,
+				C78013627172F0966AE53160 /* RainbowTrailScene.swift in Sources */,
+				FDFF44EB5DD86AFD3BC298CB /* SparkleTouchScene.swift in Sources */,
+				0CE32D66A9F16F43616B4CFC /* KidsPartySetupView.swift in Sources */,
+				9BB9FA173596EE340C8A58E8 /* KidsPartyViews.swift in Sources */,
+				8166B17126D5BB096B864178 /* KidsPartyGameState.swift in Sources */,
+				MPSVC001 /* MultipeerService.swift in Sources */,
+				KNPV001 /* KidsNetworkPartyView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

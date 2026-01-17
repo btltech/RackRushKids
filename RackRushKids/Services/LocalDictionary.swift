@@ -19,13 +19,12 @@ class LocalDictionary: ObservableObject {
     @Published private(set) var wordCount = 0
     
     private init() {
-        Task {
-            await load()
-        }
+        // Load synchronously to ensure dictionary is ready before first validation
+        loadSync()
     }
     
-    /// Load dictionary from app bundle
-    func load() async {
+    /// Load dictionary synchronously from app bundle
+    private func loadSync() {
         guard !isLoaded else { return }
         
         // Load blocklist first
@@ -66,14 +65,21 @@ class LocalDictionary: ObservableObject {
                 let sig = getSignature(word)
                 kidsSignatures[sig, default: []].append(word)
             }
+            print("LocalDictionary: Loaded \(kidsWords.count) kids words")
         } else {
             // Fallback to adult if kids list not available
             kidsWords = adultWords
             kidsSignatures = adultSignatures
+            print("LocalDictionary: No kids_enable.txt found, using adult dictionary fallback")
         }
         
         isLoaded = true
         updateMode(isKids: true) // Default to kids for this app
+    }
+    
+    /// Load dictionary from app bundle (async version for compatibility)
+    func load() async {
+        loadSync()
     }
     
     /// Switch dictionary mode

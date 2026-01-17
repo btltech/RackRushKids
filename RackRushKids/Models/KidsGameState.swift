@@ -11,6 +11,8 @@ enum KidsScreen {
     case matchResult
     case settings
     case stickers
+    case partySetup
+    case networkParty
 }
 
 // MARK: - Match Type
@@ -27,9 +29,9 @@ enum KidsAgeGroup: String, CaseIterable, Codable {
     
     var displayName: String {
         switch self {
-        case .young: return "Ages 4-6"
-        case .medium: return "Ages 7-9"
-        case .older: return "Ages 10-12"
+        case .young: return "Ages 4-6 (Easiest)"
+        case .medium: return "Ages 7-9 (Easy)"
+        case .older: return "Ages 10-12 (Moderate)"
         }
     }
     
@@ -44,6 +46,14 @@ enum KidsAgeGroup: String, CaseIterable, Codable {
         case .older: return 7
         }
     }
+    
+    var roundCount: Int {
+        switch self {
+        case .young: return 5      // Shorter games for younger kids
+        case .medium: return 7
+        case .older: return 7
+        }
+    }
 }
 
 // MARK: - Level Definition
@@ -53,6 +63,15 @@ struct LevelDef: Identifiable, Codable {
     let ageGroup: KidsAgeGroup
     let stickerReward: String
     let islandIcon: String // systemName
+}
+
+// MARK: - Bot Persona
+struct BotPersona: Identifiable {
+    let id: String
+    let name: String
+    let icon: String // Emoji
+    let skillLevel: Double // 0.0 to 1.0 (0.0 = slow/simple, 1.0 = fast/complex)
+    let description: String
 }
 
 // MARK: - Kids Game State
@@ -70,9 +89,16 @@ class KidsGameState: ObservableObject {
         LevelDef(id: 9, name: "Icy Island", ageGroup: .older, stickerReward: "❄️", islandIcon: "snowflake")
     ]
     
+    static let botPersonas: [BotPersona] = [
+        BotPersona(id: "bear", name: "Benny Bear", icon: "🐻", skillLevel: 0.2, description: "Plays slowly and uses simple words. Great for beginners!"),
+        BotPersona(id: "squirrel", name: "Sally Squirrel", icon: "🐿️", skillLevel: 0.5, description: "A quick thinker who loves medium-sized words."),
+        BotPersona(id: "owl", name: "Oliver Owl", icon: "🦉", skillLevel: 0.8, description: "Very wise and finds long words quickly!")
+    ]
+    
     @Published var screen: KidsScreen = .home
     @Published var matchType: KidsMatchType = .online
     @Published var isConnected = false
+    @Published var gameCenterError: String?  // Surface Game Center errors to UI
     
     // Queue state
     @Published var queueTime = 0
@@ -107,15 +133,22 @@ class KidsGameState: ObservableObject {
     @Published var wordRejected = false
     @Published var rejectionMessage = ""
     
+    // Rematch state
+    @Published var rematchSent = false
+    @Published var rematchReceived = false
+    @Published var isDailyChallenge: Bool = false
+    
     // Settings & Progression
     @AppStorage("kidsAgeGroup") var ageGroup: String = KidsAgeGroup.medium.rawValue
     @AppStorage("kidsSoundEnabled") var soundEnabled = true
     @AppStorage("kidsHasSeenTutorial") var hasSeenTutorial = false
+    @AppStorage("kidsOnlinePlayAllowed") var onlinePlayAllowed: Bool = false
     @AppStorage("kidsUnlockedLevel") var unlockedLevel: Int = 1
     @AppStorage("kidsCollectedStickers") private var collectedStickersData: Data = Data()
     
     @Published var selectedLevel: LevelDef?
     @Published var lastEarnedSticker: String?
+    @Published var selectedBotPersona: BotPersona = botPersonas[0]
     
     var collectedStickers: [String] {
         get {
@@ -133,6 +166,8 @@ class KidsGameState: ObservableObject {
         KidsAgeGroup(rawValue: ageGroup) ?? .medium
     }
     
+    private var dailyChallengeManager = KidsDailyChallengeManager.shared
+    private var achievementManager = KidsAchievementManager.shared
     private var socketService = KidsSocketService.shared
     private var gameCenterService = GameCenterService.shared
     private var timer: Timer?
@@ -141,7 +176,8 @@ class KidsGameState: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     init() {
-        setupGameCenterBinding()
+        setupBindings()
+        dailyChallengeManager.loadTodayChallenge()
         setupSocketCallbacks()
     }
     
@@ -151,17 +187,48 @@ class KidsGameState: ObservableObject {
         definitionTask?.cancel()
     }
     
-    private func setupGameCenterBinding() {
+    private func setupBindings() {
         // Bind connection state to Game Center auth
         gameCenterService.$isAuthenticated
             .receive(on: RunLoop.main)
             .sink { [weak self] authenticated in
                 self?.isConnected = authenticated
+                print("🎮 GC Auth changed: \(authenticated)")
+            }
+            .store(in: &cancellables)
+        
+        // Bind errors so they surface to UI
+        gameCenterService.$error
+            .receive(on: RunLoop.main)
+            .sink { [weak self] error in
+                if let error = error {
+                    print("🎮❌ GC Error: \(error)")
+                    self?.gameCenterError = error
+                }
+            }
+            .store(in: &cancellables)
+        
+        // Bind match state for debugging
+        gameCenterService.$matchState
+            .receive(on: RunLoop.main)
+            .sink { state in
+                print("🎮 GC MatchState: \(state.rawValue)")
+                if state == .playing {
+                    Task { @MainActor in
+                        self.rematchSent = false
+                        self.rematchReceived = false
+                    }
+                }
             }
             .store(in: &cancellables)
             
-        // Trigger auth
-        gameCenterService.authenticate()
+        gameCenterService.$isRematchRequested
+            .receive(on: RunLoop.main)
+            .assign(to: &$rematchSent)
+            
+        gameCenterService.$opponentRematchRequested
+            .receive(on: RunLoop.main)
+            .assign(to: &$rematchReceived)
     }
 
     private func setupSocketCallbacks() {
@@ -231,10 +298,13 @@ class KidsGameState: ObservableObject {
             // Cancel previous task and start new one
             self.definitionTask?.cancel()
             self.definitionTask = Task {
-                if let def = await KidsDictionaryService.shared.fetchDefinition(for: myWord) {
+                // Guard against cancellation for each async operation
+                if let def = await KidsDictionaryService.shared.fetchDefinition(for: myWord, ageGroup: self.selectedAgeGroup) {
+                    guard !Task.isCancelled else { return }
                     await MainActor.run { self.myWordDefinition = def.definition }
                 }
-                if let def = await KidsDictionaryService.shared.fetchDefinition(for: oppWord) {
+                if let def = await KidsDictionaryService.shared.fetchDefinition(for: oppWord, ageGroup: self.selectedAgeGroup) {
+                    guard !Task.isCancelled else { return }
                     await MainActor.run { self.oppWordDefinition = def.definition }
                 }
             }
@@ -256,44 +326,36 @@ class KidsGameState: ObservableObject {
     }
     
     func connect() {
-        // Connection state is bound to Game Center auth in setupGameCenterBinding()
-        // No socket connection needed - Game Center handles it all
-        // isConnected automatically updates when Game Center authenticates
+        // Authenticate only if a parent allowed online play; otherwise remain offline-ready.
+        if onlinePlayAllowed {
+            gameCenterService.authenticate()
+        }
     }
     
     // MARK: - Game Actions
     
     func startOnlineMatch() {
+        guard onlinePlayAllowed else {
+            screen = .settings
+            return
+        }
         matchType = .online
         queueTime = 0
         screen = .queued
+        gameCenterError = nil
         
-        // Setup Game Center callbacks
+        // Setup Game Center callbacks FIRST
         setupGameCenterCallbacks()
         
-        // Authenticate if needed
-        if !gameCenterService.isAuthenticated {
-            gameCenterService.authenticate()
-        }
+        // Configure match settings based on age group
+        gameCenterService.configuredLetterCount = selectedAgeGroup.letterCount
+        gameCenterService.configuredTotalRounds = selectedAgeGroup.roundCount
+        totalRounds = selectedAgeGroup.roundCount
         
-        // Start matchmaking after short delay for auth
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            if self.gameCenterService.isAuthenticated {
-                self.gameCenterService.findMatch()
-            } else {
-                // Wait more for auth
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    if self.gameCenterService.isAuthenticated {
-                        self.gameCenterService.findMatch()
-                    } else {
-                        // Auth failed - go back home
-                        self.screen = .home
-                    }
-                }
-            }
-        }
+        // Start the matchmaking process
+        attemptMatchmaking(retryCount: 0)
         
-        // Queue timer
+        // Queue timer for UI
         queueTimer?.invalidate()
         queueTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             Task { @MainActor in
@@ -302,10 +364,60 @@ class KidsGameState: ObservableObject {
         }
     }
     
+    /// Attempts to start matchmaking with exponential backoff for auth
+    private func attemptMatchmaking(retryCount: Int) {
+        // If already authenticated, start matchmaking immediately
+        if gameCenterService.isAuthenticated {
+            print("🎮 Game Center authenticated, finding match...")
+            gameCenterService.findMatch()
+            return
+        }
+        
+        // Trigger authentication if not already in progress
+        if gameCenterService.matchState != .authenticating {
+            gameCenterService.authenticate()
+        }
+        
+        // Maximum 5 retries (0.5s + 1s + 1.5s + 2s + 2.5s = 7.5s total wait)
+        let maxRetries = 5
+        
+        if retryCount >= maxRetries {
+            // Auth failed after multiple attempts
+            print("🎮 Game Center auth failed after \(retryCount) attempts")
+            gameCenterError = "Couldn't sign in to Game Center. Please check Settings > Game Center."
+            queueTimer?.invalidate()
+            screen = .home
+            return
+        }
+        
+        // Exponential backoff: 0.5s, 1.0s, 1.5s, 2.0s, 2.5s
+        let delay = 0.5 + (Double(retryCount) * 0.5)
+        print("🎮 Waiting \(delay)s for Game Center auth (attempt \(retryCount + 1)/\(maxRetries))...")
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            guard let self = self else { return }
+            
+            // Check if user cancelled (went back to home)
+            guard self.screen == .queued else {
+                print("🎮 User cancelled matchmaking")
+                return
+            }
+            
+            if self.gameCenterService.isAuthenticated {
+                print("🎮 Game Center authenticated on attempt \(retryCount + 1), finding match...")
+                self.gameCenterService.findMatch()
+            } else {
+                // Retry
+                self.attemptMatchmaking(retryCount: retryCount + 1)
+            }
+        }
+    }
+    
     private func setupGameCenterCallbacks() {
         gameCenterService.onMatchFound = { [weak self] in
             guard let self = self else { return }
-            self.queueTimer?.invalidate()
+            print("🎮 Match Found callback triggered")
+            // self.queueTimer?.invalidate() // Don't invalidate yet to avoid UI freeze
             self.opponentName = self.gameCenterService.opponentName
             self.isConnected = true
         }
@@ -339,6 +451,23 @@ class KidsGameState: ObservableObject {
             self.oppScore = result.oppTotalScore
             self.roundWinner = result.winner
             self.encouragement = result.winner == "you" ? "Great job! 🌟" : (result.winner == "tie" ? "It's a tie! ⭐" : "Keep trying! 💪")
+            
+            // Fetch definitions for both words
+            self.myWordDefinition = nil
+            self.oppWordDefinition = nil
+            self.definitionTask?.cancel()
+            self.definitionTask = Task {
+                // Guard against cancellation for each async operation
+                if let def = await KidsDictionaryService.shared.fetchDefinition(for: result.yourWord, ageGroup: self.selectedAgeGroup) {
+                    guard !Task.isCancelled else { return }
+                    await MainActor.run { self.myWordDefinition = def.definition }
+                }
+                if let def = await KidsDictionaryService.shared.fetchDefinition(for: result.oppWord, ageGroup: self.selectedAgeGroup) {
+                    guard !Task.isCancelled else { return }
+                    await MainActor.run { self.oppWordDefinition = def.definition }
+                }
+            }
+            
             self.screen = .result
         }
         
@@ -349,8 +478,11 @@ class KidsGameState: ObservableObject {
         }
     }
     
-    func startBotMatch() {
+    func startBotMatch(persona: BotPersona? = nil) {
         matchType = .bot
+        if let persona = persona {
+            selectedBotPersona = persona
+        }
         letters = generateLetters()
         currentWord = ""
         selectedIndices = []
@@ -358,9 +490,16 @@ class KidsGameState: ObservableObject {
         opponentSubmitted = false
         timeRemaining = selectedAgeGroup.timerSeconds
         currentRound = 1
+        totalRounds = selectedAgeGroup.roundCount  // Age-based round count
         myScore = 0
         oppScore = 0
-        opponentName = generateBotName()
+        opponentName = selectedBotPersona.name
+        
+        // Achievement check
+        if selectedBotPersona.id == "bear" {
+            achievementManager.checkAchievement(.bearBuddy, in: self)
+        }
+        
         screen = .playing
         startTimer()
     }
@@ -375,7 +514,13 @@ class KidsGameState: ObservableObject {
         queueTimer?.invalidate()
         GameCenterService.shared.cancelMatchmaking()  // Stop Game Center matchmaking
         socketService.leave()
+        rematchSent = false
+        rematchReceived = false
         screen = .home
+    }
+    
+    func requestRematch() {
+        gameCenterService.requestRematch()
     }
     
     func selectLetter(at index: Int) {
@@ -419,6 +564,15 @@ class KidsGameState: ObservableObject {
         }
         
         hasSubmitted = true
+        
+        // Track for achievements
+        if collectedStickers.isEmpty {
+            achievementManager.checkAchievement(.firstWord, in: self)
+        }
+        
+        if currentWord.count >= 5 {
+            achievementManager.checkAchievement(.longWord, in: self)
+        }
         
         if matchType == .online {
             // Use Game Center for online matches
@@ -490,9 +644,9 @@ class KidsGameState: ObservableObject {
         lastWord = currentWord
         lastWordScore = calculateScore(word: currentWord)
         
-        // Bot plays a reasonable word based on age group
+        // Bot plays a reasonable word based on persona
         // Use dictionary to find a word that can be made from available letters
-        if let botWord = KidsWordFilter.shared.getPossibleWord(from: letters, for: selectedAgeGroup) {
+        if let botWord = KidsWordFilter.shared.getPossibleWord(from: letters, for: selectedAgeGroup, skillLevel: selectedBotPersona.skillLevel) {
             oppWord = botWord.uppercased()
         } else {
             oppWord = ""
@@ -518,15 +672,23 @@ class KidsGameState: ObservableObject {
         // Cancel previous task and start new one
         definitionTask?.cancel()
         definitionTask = Task {
-            if let def = await KidsDictionaryService.shared.fetchDefinition(for: self.lastWord) {
+            // Guard against cancellation for each async operation
+            if let def = await KidsDictionaryService.shared.fetchDefinition(for: self.lastWord, ageGroup: self.selectedAgeGroup) {
+                guard !Task.isCancelled else { return }
                 await MainActor.run { self.myWordDefinition = def.definition }
             }
-            if let def = await KidsDictionaryService.shared.fetchDefinition(for: self.oppWord) {
+            if let def = await KidsDictionaryService.shared.fetchDefinition(for: self.oppWord, ageGroup: self.selectedAgeGroup) {
+                guard !Task.isCancelled else { return }
                 await MainActor.run { self.oppWordDefinition = def.definition }
             }
         }
         
         screen = .result
+        
+        // Auto-complete daily if any word is found in a daily match
+        if isDailyChallenge && lastWordScore > 0 {
+            completeDailyChallenge()
+        }
     }
     
     private func checkMatchEnd() {
@@ -599,5 +761,57 @@ class KidsGameState: ObservableObject {
     private func generateBotName() -> String {
         let names = ["Alex", "Sam", "Jordan", "Taylor", "Casey", "Morgan", "Riley", "Quinn"]
         return names.randomElement() ?? "Alex"
+    }
+    
+    func addSticker(_ sticker: String) {
+        var current = collectedStickers
+        if !current.contains(sticker) {
+            current.append(sticker)
+            collectedStickers = current
+            lastEarnedSticker = sticker
+            
+            // Auto-clear after 3 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+                if self?.lastEarnedSticker == sticker {
+                    self?.lastEarnedSticker = nil
+                }
+            }
+        }
+    }
+    
+    // MARK: - Daily Challenge
+    
+    var todayDailyChallenge: DailyChallenge? {
+        dailyChallengeManager.todayChallenge
+    }
+    
+    var hasCompletedDaily: Bool {
+        dailyChallengeManager.hasCompletedToday
+    }
+    
+    func startDailyChallenge() {
+        guard let challenge = todayDailyChallenge else { return }
+        matchType = .bot // Daily is local
+        isDailyChallenge = true
+        
+        // Setup daily letters from challenge
+        letters = challenge.letters
+        currentWord = ""
+        selectedIndices = []
+        hasSubmitted = false
+        opponentSubmitted = false
+        timeRemaining = selectedAgeGroup.timerSeconds
+        currentRound = 1
+        myScore = 0
+        oppScore = 0
+        opponentName = "Daily Goal"
+        
+        screen = .playing
+        startTimer()
+    }
+    
+    func completeDailyChallenge() {
+        dailyChallengeManager.submitCompletion()
+        achievementManager.checkAchievement(.dailyComplete, in: self)
     }
 }

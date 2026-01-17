@@ -5,174 +5,53 @@ struct KidsHomeView: View {
     @State private var logoScale: CGFloat = 0.8
     @State private var logoOpacity: Double = 0
     @State private var buttonsOpacity: Double = 0
+    @State private var showPersonaPicker = false
     
     var body: some View {
         ZStack {
-            // Background (matching adult app)
-            KidsTheme.backgroundGradient
-                .ignoresSafeArea()
+            // Background handled by KidsContentView
             
-            // Ambient Particles (Design Improvement)
-            AmbientParticlesView(
-                count: 15, // Fewer, larger particles for kids
-                colors: [
-                    Color.white,
-                    Color.purple.opacity(0.3),
-                    Color.blue.opacity(0.3),
-                    Color(hex: "FFD700").opacity(0.3) // Gold sparkles
-                ]
-            )
-            .ignoresSafeArea()
-            .blendMode(.overlay)
+            // GPU-accelerated ambient particles (SpriteKit Kids Mode)
+            SKKidsAmbientParticlesView()
+                .ignoresSafeArea()
+                .blendMode(.overlay)
+            
+            // Floating balloons with sparkles - tap balloons to pop, tap elsewhere for sparkles!
+            SKBalloonView()
+                .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Top bar
-                HStack {
-                    Spacer()
-                    
-                    // Settings button
-                    Button(action: { gameState.screen = .settings }) {
-                        Image(systemName: "gearshape.fill")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(KidsTheme.textSecondary)
-                            .frame(width: 44, height: 44)
-                            .background(KidsTheme.surface)
-                            .clipShape(Circle())
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 12)
+                TopBar(gameState: gameState)
                 
                 Spacer()
                 
                 // Logo (matching adult style)
-                VStack(spacing: 12) {
-                    VStack(spacing: -6) {
-                        Text("WORD")
-                            .font(.system(size: 56, weight: .black, design: .rounded))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color(hex: "667eea"), Color(hex: "764ba2")],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .shadow(color: Color(hex: "667eea").opacity(0.4), radius: 20, y: 8)
-                        
-                        Text("RUSH")
-                            .font(.system(size: 56, weight: .black, design: .rounded))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color(hex: "00d2ff"), Color(hex: "3a7bd5")],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .shadow(color: Color(hex: "3a7bd5").opacity(0.4), radius: 20, y: 8)
-                    }
-                    .shimmer(duration: 3, delay: 1) // Added shimmer effect
-                    
-                    // Subtitle
-                    HStack(spacing: 8) {
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 12))
-                            .foregroundColor(Color(hex: "FFD700"))
-                        
-                        Text("KIDS EDITION")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                            .foregroundColor(KidsTheme.textSecondary)
-                            .tracking(4)
-                        
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 12))
-                            .foregroundColor(Color(hex: "FFD700"))
-                    }
-                }
-                .scaleEffect(logoScale)
-                .opacity(logoOpacity)
+                LogoView(logoScale: logoScale, logoOpacity: logoOpacity)
                 
                 // Connection status
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(gameState.isConnected ? Color.green : Color.blue)
-                        .frame(width: 8, height: 8)
-                    
-                    Text(gameState.isConnected ? "Online" : "Offline Ready")
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundColor(KidsTheme.textMuted)
-                }
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-                .background(KidsTheme.surface)
-                .clipShape(Capsule())
-                .padding(.top, 20)
+                ConnectionStatusView(isConnected: gameState.isConnected)
                 
                 Spacer()
                 
                 // Age Group Selector
-                VStack(spacing: 12) {
-                    Text("SELECT YOUR AGE")
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundColor(KidsTheme.textMuted)
-                        .tracking(2)
-                    
-                    HStack(spacing: 10) {
-                        ForEach(KidsAgeGroup.allCases, id: \.self) { age in
-                            AgeGroupButton(
-                                ageGroup: age,
-                                isSelected: gameState.ageGroup == age.rawValue,
-                                action: { gameState.ageGroup = age.rawValue }
-                            )
-                        }
-                    }
-                }
-                .padding(.horizontal, 20)
+                AgeGroupSelector(gameState: gameState)
                 
                 Spacer()
                 
                 // Menu buttons (matching adult style)
-                VStack(spacing: 14) {
-                    // Play Online
-                    MenuButton(
-                        label: "PLAY ONLINE",
-                        icon: "globe",
-                        gradient: KidsTheme.playButtonGradient,
-                        isEnabled: gameState.isConnected,
-                        action: { gameState.startOnlineMatch() }
-                    )
-                    
-                    // Word Islands (Map)
-                    MenuButton(
-                        label: "WORD ISLANDS",
-                        icon: "map.fill",
-                        gradient: LinearGradient(
-                            colors: [Color(hex: "FF6B6B"), Color(hex: "FF8E53")],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ),
-                        isEnabled: true,
-                        action: { gameState.screen = .map }
-                    )
-                    
-                    // Practice (Legacy or Quick Play)
-                    /*
-                    MenuButton(
-                        label: "PRACTICE",
-                        icon: "cpu",
-                        gradient: LinearGradient(
-                            colors: [Color(hex: "4facfe"), Color(hex: "00f2fe")],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ),
-                        isEnabled: true,
-                        action: { gameState.startBotMatch() }
-                    )
-                    */
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 40)
-                .opacity(buttonsOpacity)
+                MenuSection(gameState: gameState, buttonsOpacity: buttonsOpacity)
             }
+            
+            // Sticker Notification Overlay
+            if let sticker = gameState.lastEarnedSticker {
+                StickerToast(sticker: sticker)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .zIndex(10)
+            }
+        }
+        .sheet(isPresented: $showPersonaPicker) {
+            PersonaPickerSheet(gameState: gameState)
         }
         .onAppear {
             // Connect on appear
@@ -186,6 +65,187 @@ struct KidsHomeView: View {
             withAnimation(.easeOut(duration: 0.5).delay(0.3)) {
                 buttonsOpacity = 1.0
             }
+        }
+    }
+}
+
+// MARK: - Sub-views for KidsHomeView
+struct TopBar: View {
+    @ObservedObject var gameState: KidsGameState
+    var body: some View {
+        HStack {
+            Spacer()
+            Button(action: { gameState.screen = .settings }) {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(KidsTheme.textSecondary)
+                    .frame(width: 44, height: 44)
+                    .background(KidsTheme.surface)
+                    .clipShape(Circle())
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+    }
+}
+
+struct LogoView: View {
+    let logoScale: CGFloat
+    let logoOpacity: Double
+    var body: some View {
+        VStack(spacing: 12) {
+            VStack(spacing: -6) {
+                Text("WORD")
+                    .font(.system(size: 56, weight: .black, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color(hex: "667eea"), Color(hex: "764ba2")],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .shadow(color: Color(hex: "667eea").opacity(0.4), radius: 20, y: 8)
+                
+                Text("RUSH")
+                    .font(.system(size: 56, weight: .black, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color(hex: "00d2ff"), Color(hex: "3a7bd5")],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .shadow(color: Color(hex: "3a7bd5").opacity(0.4), radius: 20, y: 8)
+            }
+            .shimmer(duration: 3, delay: 1)
+            
+            HStack(spacing: 8) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 12))
+                    .foregroundColor(Color(hex: "FFD700"))
+                Text("KIDS EDITION")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundColor(KidsTheme.textSecondary)
+                    .tracking(4)
+                Image(systemName: "sparkles")
+                    .font(.system(size: 12))
+                    .foregroundColor(Color(hex: "FFD700"))
+            }
+        }
+        .scaleEffect(logoScale)
+        .opacity(logoOpacity)
+    }
+}
+
+struct ConnectionStatusView: View {
+    let isConnected: Bool
+    var body: some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(isConnected ? Color.green : Color.blue)
+                .frame(width: 8, height: 8)
+            Text(isConnected ? "Online" : "Offline Ready")
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundColor(KidsTheme.textMuted)
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
+        .background(KidsTheme.surface)
+        .clipShape(Capsule())
+        .padding(.top, 20)
+    }
+}
+
+struct AgeGroupSelector: View {
+    @ObservedObject var gameState: KidsGameState
+    var body: some View {
+        VStack(spacing: 12) {
+            Text("SELECT YOUR AGE")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundColor(KidsTheme.textMuted)
+                .tracking(2)
+            HStack(spacing: 10) {
+                ForEach(KidsAgeGroup.allCases, id: \.self) { age in
+                    AgeGroupButton(
+                        ageGroup: age,
+                        isSelected: gameState.ageGroup == age.rawValue,
+                        action: { gameState.ageGroup = age.rawValue }
+                    )
+                }
+            }
+        }
+        .padding(.horizontal, 20)
+    }
+}
+
+struct MenuSection: View {
+    @ObservedObject var gameState: KidsGameState
+    let buttonsOpacity: Double
+    var body: some View {
+        VStack(spacing: 12) {
+            // Primary action
+            MenuButton(
+                label: "PLAY ONLINE",
+                icon: "globe",
+                gradient: KidsTheme.playButtonGradient,
+                isEnabled: gameState.onlinePlayAllowed,
+                action: { gameState.startOnlineMatch() }
+            )
+            
+            // Secondary row: Word Islands + Party Time
+            HStack(spacing: 12) {
+                MenuButtonCompact(
+                    label: "ISLANDS",
+                    icon: "map.fill",
+                    gradient: LinearGradient(
+                        colors: [Color(hex: "FF6B6B"), Color(hex: "FF8E53")],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ),
+                    action: { gameState.screen = .map }
+                )
+                
+                MenuButtonCompact(
+                    label: "PARTY!",
+                    icon: "person.3.fill",
+                    gradient: KidsTheme.partyGradient,
+                    action: { gameState.screen = .partySetup }
+                )
+            }
+            
+            DailyChallengeCard(gameState: gameState)
+                .padding(.top, 6)
+        }
+        .padding(.horizontal, 24)
+        .padding(.bottom, 16)
+        .opacity(buttonsOpacity)
+    }
+}
+
+// Compact button for side-by-side layout
+struct MenuButtonCompact: View {
+    let label: String
+    let icon: String
+    let gradient: LinearGradient
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: {
+            KidsAudioManager.shared.playNavigation()
+            action()
+        }) {
+            VStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 22, weight: .semibold))
+                Text(label)
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(gradient)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .shadow(color: Color.black.opacity(0.2), radius: 6, y: 3)
         }
     }
 }
@@ -313,6 +373,223 @@ struct KidsQueuedView: View {
             }
             .padding(.bottom, 40)
         }
+    }
+}
+
+// MARK: - Persona Picker Sheet
+struct PersonaPickerSheet: View {
+    @ObservedObject var gameState: KidsGameState
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        NavigationView {
+            PersonaPickerContent(gameState: gameState, dismiss: { dismiss() })
+                .navigationTitle("Character Practice")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Close") { dismiss() }
+                            .foregroundColor(KidsTheme.textPrimary)
+                    }
+                }
+        }
+    }
+}
+
+struct PersonaPickerContent: View {
+    @ObservedObject var gameState: KidsGameState
+    let dismiss: () -> Void
+    
+    var body: some View {
+        ZStack {
+            KidsTheme.backgroundGradient.ignoresSafeArea()
+            
+            ScrollView {
+                VStack(spacing: 20) {
+                    Text("CHOOSING AN OPPONENT")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(KidsTheme.textMuted)
+                        .tracking(2)
+                        .padding(.top, 20)
+                    
+                    ForEach(KidsGameState.botPersonas) { persona in
+                        PersonaButton(persona: persona, gameState: gameState, dismiss: dismiss)
+                    }
+                }
+                .padding(20)
+            }
+        }
+    }
+}
+
+struct PersonaButton: View {
+    let persona: BotPersona
+    @ObservedObject var gameState: KidsGameState
+    let dismiss: () -> Void
+    
+    var body: some View {
+        Button(action: {
+            gameState.startBotMatch(persona: persona)
+            dismiss()
+        }) {
+            HStack(spacing: 20) {
+                Text(persona.icon)
+                    .font(.system(size: 50))
+                    .frame(width: 80, height: 80)
+                    .background(Circle().fill(Color.white.opacity(0.1)))
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(persona.name)
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                    
+                    Text(persona.description)
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .foregroundColor(KidsTheme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "play.fill")
+                    .foregroundColor(.white)
+                    .font(.title3)
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(KidsTheme.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    )
+            )
+        }
+    }
+}
+// MARK: - Daily Challenge Card
+struct DailyChallengeCard: View {
+    @ObservedObject var gameState: KidsGameState
+    
+    var body: some View {
+        Button(action: {
+            if !gameState.hasCompletedDaily {
+                gameState.startDailyChallenge()
+            }
+        }) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("DAILY GOAL")
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .foregroundColor(KidsTheme.textMuted)
+                            .tracking(2)
+                        
+                        Text(gameState.hasCompletedDaily ? "Challenge Done! ✨" : "Today's Secret Letters")
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                    }
+                    
+                    Spacer()
+                    
+                    Text(gameState.hasCompletedDaily ? "✅" : "🎁")
+                        .font(.system(size: 32))
+                }
+                
+                if !gameState.hasCompletedDaily {
+                    HStack(spacing: 8) {
+                        ForEach(gameState.todayDailyChallenge?.letters ?? [], id: \.self) { letter in
+                            Text(letter)
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .frame(width: 30, height: 30)
+                                .background(Color.white.opacity(0.2))
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                        }
+                    }
+                }
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.white.opacity(0.1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    )
+            )
+        }
+        .disabled(gameState.hasCompletedDaily)
+        .opacity(gameState.hasCompletedDaily ? 0.8 : 1.0)
+    }
+}
+
+// MARK: - Sticker Toast
+struct StickerToast: View {
+    let sticker: String
+    
+    var body: some View {
+        VStack {
+            HStack(spacing: 16) {
+                Text(sticker)
+                    .font(.system(size: 40))
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("NEW STICKER!")
+                        .font(.system(size: 12, weight: .black, design: .rounded))
+                        .foregroundColor(Color(hex: "FFD700"))
+                    
+                    Text("Added to your Sticker Book")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
+            .background(
+                Capsule()
+                    .fill(Color.black.opacity(0.85))
+                    .overlay(Capsule().stroke(Color.white.opacity(0.2), lineWidth: 1))
+            )
+            .shadow(color: Color.black.opacity(0.3), radius: 10, y: 5)
+            .padding(.top, 60)
+            
+            Spacer()
+        }
+        .ignoresSafeArea()
+    }
+}
+
+// MARK: - Community Goal View
+struct CommunityGoalView: View {
+    @ObservedObject var communityManager = KidsCommunityManager.shared
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "person.2.fill")
+                .foregroundColor(Color(hex: "00d2ff"))
+            
+            Text("KIDS FOUND")
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundColor(KidsTheme.textMuted)
+                .tracking(1)
+            
+            Text(communityManager.formattedCount)
+                .font(.system(size: 14, weight: .black, design: .monospaced))
+                .foregroundColor(.white)
+            
+            Text("WORDS TODAY! 🌟")
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundColor(KidsTheme.textMuted)
+                .tracking(1)
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
+        .background(
+            Capsule()
+                .fill(Color.white.opacity(0.05))
+                .overlay(Capsule().stroke(Color.white.opacity(0.1), lineWidth: 1))
+        )
     }
 }
 

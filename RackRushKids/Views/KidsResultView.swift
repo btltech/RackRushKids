@@ -5,14 +5,21 @@ import AVFoundation
 struct KidsResultView: View {
     @ObservedObject var gameState: KidsGameState
     @State private var showContent = false
+    @State private var showStars = false
+    @State private var scoreToShow: Int? = nil
+    @State private var scorePosition = CGPoint(x: UIScreen.main.bounds.width / 2, y: 200)
     
     var isWinner: Bool {
         gameState.roundWinner == "you" || gameState.roundWinner == "me"
     }
     
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
+        ZStack {
+            // Background handled by KidsContentView
+            
+            VStack(spacing: 24) {
+                Spacer()
+                
             
             // Result icon
             ZStack {
@@ -121,7 +128,32 @@ struct KidsResultView: View {
             .padding(.horizontal, 28)
             .padding(.bottom, 32)
         }
-        .onAppear { showContent = true }
+        .overlay {
+            // Star burst effect on wins
+            if isWinner {
+                SKKidsStarBurstView(trigger: $showStars)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
+        }
+        .overlay {
+            // Score popup
+            SKKidsScorePopView(scoreToShow: $scoreToShow, showPosition: $scorePosition)
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
+        }
+        .onAppear { 
+            showContent = true
+            
+            // Trigger effects after a short delay
+            if isWinner {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    showStars = true
+                    scoreToShow = gameState.lastWordScore
+                }
+            }
+        }
+        }
     }
 }
 
@@ -135,7 +167,10 @@ struct KidsMatchResultView: View {
     }
     
     var body: some View {
-        VStack(spacing: 28) {
+        ZStack {
+            // Background handled by KidsContentView
+            
+            VStack(spacing: 28) {
             Spacer()
             
             // Trophy / Result
@@ -275,25 +310,57 @@ struct KidsMatchResultView: View {
             
             // Buttons
             VStack(spacing: 12) {
-                Button(action: {
-                    if gameState.matchType == .online {
-                        gameState.startOnlineMatch()
-                    } else if let level = gameState.selectedLevel {
-                        gameState.startLevel(level)
-                    } else {
-                        gameState.startBotMatch()
+                if gameState.matchType == .online {
+                    Button(action: {
+                        gameState.requestRematch()
+                    }) {
+                        HStack {
+                            if gameState.rematchSent && !gameState.rematchReceived {
+                                ProgressView()
+                                    .tint(.white)
+                                    .padding(.trailing, 8)
+                                Text("Waiting for Opponent...")
+                            } else {
+                                Image(systemName: gameState.rematchReceived ? "hand.thumbsup.fill" : "arrow.clockwise")
+                                Text(gameState.rematchReceived ? "Accept Rematch!" : "Request Rematch")
+                            }
+                        }
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            Group {
+                                if gameState.rematchSent && !gameState.rematchReceived {
+                                    Color.gray
+                                } else {
+                                    KidsTheme.playButtonGradient
+                                }
+                            }
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
-                }) {
-                    HStack {
-                        Image(systemName: "arrow.clockwise")
-                        Text("Play Again")
+                    .disabled(gameState.rematchSent && !gameState.rematchReceived)
+                }
+ else {
+                    Button(action: {
+                        if let level = gameState.selectedLevel {
+                            gameState.startLevel(level)
+                        } else {
+                            gameState.startBotMatch()
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.clockwise")
+                            Text("Play Again")
+                        }
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(KidsTheme.playButtonGradient)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(KidsTheme.playButtonGradient)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
                 
                 Button(action: { gameState.goToMap() }) {
@@ -320,11 +387,12 @@ struct KidsMatchResultView: View {
         .overlay(
             Group {
                 if isWinner {
-                    ConfettiView()
+                    SKKidsConfettiView()
                         .allowsHitTesting(false)
                 }
             }
         )
+        }
         .onAppear { 
             showTrophy = true 
             if isWinner {
@@ -343,7 +411,7 @@ struct WordCard: View {
     let score: Int
     let isSelf: Bool
     var definition: String? = nil
-    @State private var isSpeaking = false
+    @ObservedObject private var ttsService = KidsTTSService.shared
     
     var body: some View {
         VStack(spacing: 8) {
@@ -359,15 +427,15 @@ struct WordCard: View {
                 
                 // Pronunciation button (ear/speaker icon)
                 if !word.isEmpty {
-                    Button(action: speakWord) {
-                        Image(systemName: isSpeaking ? "speaker.wave.3.fill" : "speaker.wave.2.fill")
+                    Button(action: { ttsService.speak(word) }) {
+                        Image(systemName: ttsService.isSpeaking ? "speaker.wave.3.fill" : "speaker.wave.2.fill")
                             .font(.system(size: 16))
                             .foregroundColor(.white.opacity(0.9))
                             .padding(6)
                             .background(Color.white.opacity(0.2))
                             .clipShape(Circle())
                     }
-                    .disabled(isSpeaking)
+                    .disabled(ttsService.isSpeaking)
                 }
             }
             
@@ -391,27 +459,6 @@ struct WordCard: View {
                 .fill(isSelf ? KidsTheme.playerSelfGradient : KidsTheme.playerOpponentGradient)
                 .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
         )
-    }
-    
-    // Static synthesizer so it doesn't get deallocated mid-speech
-    private static let synthesizer = AVSpeechSynthesizer()
-    
-    private func speakWord() {
-        guard !word.isEmpty else { return }
-        isSpeaking = true
-        
-        let utterance = AVSpeechUtterance(string: word.lowercased())
-        utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.7  // Slower for kids
-        utterance.pitchMultiplier = 1.15  // Slightly higher pitch
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-        
-        // Use static synthesizer so it persists
-        Self.synthesizer.speak(utterance)
-        
-        // Reset after speaking (estimate 1.5s per word)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            isSpeaking = false
-        }
     }
 }
 

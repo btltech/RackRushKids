@@ -1,0 +1,255 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project RackRushKids.xcodeproj -scheme RackRushKids -configuration Debug -sdk iphonesimulator build
+
+Build settings from command line:
+    SDKROOT = iphonesimulator26.2
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  SocketIO: https://github.com/socketio/socket.io-client-swift @ 16.1.1
+  Starscream: https://github.com/daltoniam/Starscream @ 4.0.8
+
+2026-01-14 22:11:35.238 xcodebuild[15118:3341330] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:iOS Simulator, id:dvtdevice-DVTiOSDeviceSimulatorPlaceholder-iphonesimulator:placeholder, name:Any iOS Simulator Device }
+{ platform:iOS Simulator, arch:arm64, id:7CD43C1A-578E-47D8-AA16-0BFD5DF6E0D6, OS:26.1, name:iPad Pro 13-inch (M5) }
+{ platform:iOS Simulator, arch:arm64, id:11DDFB1D-762A-4D4F-8709-5A9C73186B38, OS:18.6, name:iPad Pro Secondary }
+{ platform:iOS Simulator, arch:x86_64, id:11DDFB1D-762A-4D4F-8709-5A9C73186B38, OS:18.6, name:iPad Pro Secondary }
+{ platform:iOS Simulator, arch:arm64, id:971C2640-958D-445A-9E9E-BA4EEC55A359, OS:26.2, name:iPhone 17 Pro }
+{ platform:iOS Simulator, arch:arm64, id:608B5276-AACF-45BC-A928-3E0EB4CE516B, OS:26.2, name:iPhone 17 Pro Max }
+{ platform:visionOS Simulator, arch:arm64, variant:Designed for [iPad,iPhone], id:7D85D513-06DB-47AD-91C1-58FBF1A0454B, OS:26.2, name:Apple Vision Pro }
+{ platform:macOS, arch:arm64, variant:Designed for [iPad,iPhone], id:00006001-000228143602801E, name:My Mac }
+{ platform:iOS, id:dvtdevice-DVTiPhonePlaceholder-iphoneos:placeholder, name:Any iOS Device }
+{ platform:iOS, arch:arm64, id:00008103-0018699214DA001E, name:Btl’s M1 iPad Pro }
+{ platform:iOS, arch:arm64, id:00008130-00011D5A0A06001C, name:Btl’sconnect }
+{ platform:iOS, arch:arm64, id:f3025a443bfdcf1ac75c47e82e24255a724d62f4, name:Coco’s iPad (3) }
+{ platform:iOS, arch:arm64, id:00008101-000C514814A0001E, name:Davids favorite ipad }
+{ platform:iOS, arch:arm64, id:00008027-001648C0340A002E, name:iPad }
+{ platform:iOS, arch:arm64, id:00008030-0006356C14C0C02E, name:iPad (4) }
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (6 targets)
+    Target 'RackRushKids' in project 'RackRushKids'
+        ➜ Explicit dependency on target 'SocketIO' in project 'SocketIO'
+    Target 'SocketIO' in project 'SocketIO'
+        ➜ Explicit dependency on target 'SocketIO' in project 'SocketIO'
+        ➜ Explicit dependency on target 'Starscream' in project 'Starscream'
+    Target 'SocketIO' in project 'SocketIO'
+        ➜ Explicit dependency on target 'Starscream' in project 'Starscream'
+    Target 'Starscream' in project 'Starscream'
+        ➜ Explicit dependency on target 'Starscream' in project 'Starscream'
+        ➜ Explicit dependency on target 'Starscream_Starscream' in project 'Starscream'
+    Target 'Starscream' in project 'Starscream'
+        ➜ Explicit dependency on target 'Starscream_Starscream' in project 'Starscream'
+    Target 'Starscream_Starscream' in project 'Starscream' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.2.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: 69d306ba30ce23154324a39465835efa
+Build description path: /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/XCBuildData/69d306ba30ce23154324a39465835efa.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.2.sdk /Users/mobolaji/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.2-23C53-7d00a8b37fbd7999ea79df8ebc024bf0.sdkstatcache
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.2.sdk -o /Users/mobolaji/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.2-23C53-7d00a8b37fbd7999ea79df8ebc024bf0.sdkstatcache
+
+ProcessInfoPlistFile /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/Starscream_Starscream.bundle/Info.plist /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/Starscream.build/Debug-iphonesimulator/Starscream_Starscream.build/empty-Starscream_Starscream.plist (in target 'Starscream_Starscream' from project 'Starscream')
+    cd /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/SourcePackages/checkouts/Starscream
+    builtin-infoPlistUtility /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/Starscream.build/Debug-iphonesimulator/Starscream_Starscream.build/empty-Starscream_Starscream.plist -producttype com.apple.product-type.bundle -expandbuildsettings -format binary -platform iphonesimulator -o /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/Starscream_Starscream.bundle/Info.plist
+
+ProcessProductPackaging /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/RackRushKids.entitlements /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids.app.xcent (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+    Entitlements:
+    
+    {
+}
+    
+    builtin-productPackagingUtility /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/RackRushKids.entitlements -entitlements -format xml -o /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids.app.xcent
+
+ProcessProductPackaging /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/RackRushKids.entitlements /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids.app-Simulated.xcent (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+    Entitlements:
+    
+    {
+    "application-identifier" = "8L5LTN9LMB.com.rackrush.kids";
+    "com.apple.developer.game-center" = 1;
+}
+    
+    builtin-productPackagingUtility /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/RackRushKids.entitlements -entitlements -format xml -o /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids.app-Simulated.xcent
+
+ProcessProductPackagingDER /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids.app.xcent /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids.app.xcent.der (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    /usr/bin/derq query -f xml -i /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids.app.xcent -o /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids.app.xcent.der --raw
+
+ProcessProductPackagingDER /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids.app-Simulated.xcent /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids.app-Simulated.xcent.der (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    /usr/bin/derq query -f xml -i /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids.app-Simulated.xcent -o /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids.app-Simulated.xcent.der --raw
+
+CreateUniversalBinary /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/RackRushKids.app/__preview.dylib normal arm64\ x86_64 (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -create /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/arm64/Binary/__preview.dylib /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/Binary/__preview.dylib -output /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/RackRushKids.app/__preview.dylib
+
+Copy /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/RackRushKids.app/Starscream_Starscream.bundle /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/Starscream_Starscream.bundle (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/Starscream_Starscream.bundle /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/RackRushKids.app
+
+SwiftDriver RackRushKids normal arm64 com.apple.xcode.tools.swift.compiler (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name RackRushKids -Onone -enforce-exclusivity\=checked @/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/arm64/RackRushKids.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.2.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator -F /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/arm64 -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/mobolaji/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.2-23C53-7d00a8b37fbd7999ea79df8ebc024bf0.sdkstatcache -output-file-map /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/arm64/RackRushKids-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/arm64/RackRushKids.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/mobolaji/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/arm64/RackRushKids_const_extract_protocols.json -Xcc -iquote -Xcc /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids-generated-files.hmap -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids-own-target-headers.hmap -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids-83ced38f0ce77722e15abc7c56f5333b-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids-project-headers.hmap -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/DerivedSources-normal/arm64 -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/DerivedSources/arm64 -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/arm64/RackRushKids-Swift.h -working-directory /Users/mobolaji/rackrush/ios-native/RackRushKids -experimental-emit-module-separately -disable-cmo
+
+CompileAssetCatalogVariant thinned /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/RackRushKids.app /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Assets.xcassets (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    /Applications/Xcode.app/Contents/Developer/usr/bin/actool /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Assets.xcassets --compile /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --development-region en --target-device iphone --target-device ipad --minimum-deployment-target 17.0 --platform iphonesimulator
+
+SwiftDriver RackRushKids normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name RackRushKids -Onone -enforce-exclusivity\=checked @/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.2.sdk -target x86_64-apple-ios17.0-simulator -g -module-cache-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator -F /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64 -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/mobolaji/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.2-23C53-7d00a8b37fbd7999ea79df8ebc024bf0.sdkstatcache -output-file-map /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/mobolaji/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids_const_extract_protocols.json -Xcc -iquote -Xcc /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids-generated-files.hmap -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids-own-target-headers.hmap -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids-83ced38f0ce77722e15abc7c56f5333b-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids-project-headers.hmap -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/DerivedSources-normal/x86_64 -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/DerivedSources/x86_64 -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids-Swift.h -working-directory /Users/mobolaji/rackrush/ios-native/RackRushKids -experimental-emit-module-separately -disable-cmo
+
+SwiftCompile normal x86_64 Compiling\ KidsResultView.swift,\ KidsSettingsView.swift,\ KidsParentalControlsView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsResultView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsSettingsView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsParentalControlsView.swift (in target 'RackRushKids' from project 'RackRushKids')
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsResultView.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsSettingsView.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsParentalControlsView.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 Compiling\ KidsGameState.swift,\ KidsHomeView.swift,\ KidsMatchView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Models/KidsGameState.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsHomeView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsMatchView.swift (in target 'RackRushKids' from project 'RackRushKids')
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Models/KidsGameState.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsHomeView.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsMatchView.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftEmitModule normal x86_64 Emitting\ module\ for\ RackRushKids (in target 'RackRushKids' from project 'RackRushKids')
+Failed frontend command:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -emit-module -experimental-skip-non-inlinable-function-bodies-without-types /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/RackRushKidsApp.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/KidsContentView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/KidsTheme.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Models/KidsGameState.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsHomeView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsMatchView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsResultView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsSettingsView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsParentalControlsView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/KidsWordFilter.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/KidsSocketService.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsEffects.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/HapticManager.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/KidsAudioManager.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/KidsDictionaryService.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsTutorialOverlay.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsMapView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/StickerBookView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Components/IslandNode.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/LocalDictionary.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/LocalScorer.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/LocalRackGenerator.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/LocalBotPlayer.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/GameCenterService.swift /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/DerivedSources/GeneratedAssetSymbols.swift -target x86_64-apple-ios17.0-simulator -module-can-import-version DeveloperToolsSupport 23.0.4 23.0.4 -module-can-import-version SwiftUI 7.2.5.1 7.2.5 -module-can-import-version UIKit 9126.2.4.1 9126.2.4 -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libFoundationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#FoundationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libObservationMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#ObservationMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libPreviewsMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#PreviewsMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftMacros -load-resolved-plugin /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/swift/host/plugins/libSwiftUIMacros.dylib\#/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/swift-plugin-server\#SwiftUIMacros -disable-implicit-swift-modules -Xcc -fno-implicit-modules -Xcc -fno-implicit-module-maps -explicit-swift-module-map-file /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids-dependencies-2.json -enable-objc-interop -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.2.sdk -I /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator -F /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator -no-color-diagnostics -Xcc -fno-color-diagnostics -enable-testing -g -debug-info-format\=dwarf -dwarf-version\=4 -module-cache-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -swift-version 5 -enforce-exclusivity\=checked -Onone -D DEBUG -serialize-debugging-options -const-gather-protocols-file /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids_const_extract_protocols.json -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -empty-abi-descriptor -validate-clang-modules-once -clang-build-session-file /Users/mobolaji/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -working-directory -Xcc /Users/mobolaji/rackrush/ios-native/RackRushKids -enable-anonymous-context-mangled-names -file-compilation-dir /Users/mobolaji/rackrush/ios-native/RackRushKids -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -Xcc -ivfsstatcache -Xcc /Users/mobolaji/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator26.2-23C53-7d00a8b37fbd7999ea79df8ebc024bf0.sdkstatcache -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids-generated-files.hmap -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids-own-target-headers.hmap -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids-83ced38f0ce77722e15abc7c56f5333b-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/RackRushKids-project-headers.hmap -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/DerivedSources-normal/x86_64 -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/DerivedSources/x86_64 -Xcc -I/Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/DerivedSources -Xcc -DDEBUG\=1 -no-auto-bridging-header-chaining -module-name RackRushKids -frontend-parseable-output -disable-clang-spi -target-sdk-version 26.2 -target-sdk-name iphonesimulator26.2 -clang-target x86_64-apple-ios26.2-simulator -in-process-plugin-server-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftInProcPluginServer.dylib -emit-module-doc-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids.swiftdoc -emit-module-source-info-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids.swiftsourceinfo -emit-objc-header-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids-Swift.h -serialize-diagnostics-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids-primary-emit-module.dia -emit-dependencies-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids-primary-emit-module.d -o /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids.swiftmodule -emit-abi-descriptor-path /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/Objects-normal/x86_64/RackRushKids.abi.json
+
+EmitSwiftModule normal x86_64 (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+/Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Models/KidsGameState.swift:159:41: error: cannot find 'KidsDailyChallengeManager' in scope
+    private var dailyChallengeManager = KidsDailyChallengeManager.shared
+                                        ^~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Models/KidsGameState.swift:160:38: error: cannot find 'KidsAchievementManager' in scope
+    private var achievementManager = KidsAchievementManager.shared
+                                     ^~~~~~~~~~~~~~~~~~~~~~
+/Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Models/KidsGameState.swift:739:30: error: cannot find type 'DailyChallenge' in scope
+    var todayDailyChallenge: DailyChallenge? {
+                             ^~~~~~~~~~~~~~
+
+SwiftCompile normal x86_64 Compiling\ GameCenterService.swift,\ GeneratedAssetSymbols.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/GameCenterService.swift /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'RackRushKids' from project 'RackRushKids')
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/GameCenterService.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 /Users/mobolaji/Library/Developer/Xcode/DerivedData/RackRushKids-aekmuxlvndwmveffjuxqbhwcgaut/Build/Intermediates.noindex/RackRushKids.build/Debug-iphonesimulator/RackRushKids.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 Compiling\ KidsTutorialOverlay.swift,\ KidsMapView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsTutorialOverlay.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsMapView.swift (in target 'RackRushKids' from project 'RackRushKids')
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsTutorialOverlay.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsMapView.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 Compiling\ RackRushKidsApp.swift,\ KidsContentView.swift,\ KidsTheme.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/RackRushKidsApp.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/KidsContentView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/KidsTheme.swift (in target 'RackRushKids' from project 'RackRushKids')
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/RackRushKidsApp.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/KidsContentView.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/KidsTheme.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 Compiling\ StickerBookView.swift,\ IslandNode.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/StickerBookView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Components/IslandNode.swift (in target 'RackRushKids' from project 'RackRushKids')
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/StickerBookView.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Components/IslandNode.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 Compiling\ HapticManager.swift,\ KidsAudioManager.swift,\ KidsDictionaryService.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/HapticManager.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/KidsAudioManager.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/KidsDictionaryService.swift (in target 'RackRushKids' from project 'RackRushKids')
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/HapticManager.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/KidsAudioManager.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/KidsDictionaryService.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 Compiling\ LocalDictionary.swift,\ LocalScorer.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/LocalDictionary.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/LocalScorer.swift (in target 'RackRushKids' from project 'RackRushKids')
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/LocalDictionary.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftCompile normal x86_64 /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Services/LocalScorer.swift (in target 'RackRushKids' from project 'RackRushKids')
+    cd /Users/mobolaji/rackrush/ios-native/RackRushKids
+    
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ RackRushKids (in target 'RackRushKids' from project 'RackRushKids')
+
+SwiftDriverJobDiscovery normal x86_64 Compiling LocalDictionary.swift, LocalScorer.swift (in target 'RackRushKids' from project 'RackRushKids')
+
+SwiftCompile normal arm64 Compiling\ KidsGameState.swift,\ KidsHomeView.swift,\ KidsMatchView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Models/KidsGameState.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsHomeView.swift /Users/mobolaji/rackrush/ios-native/RackRushKids/RackRushKids/Views/KidsMatchView.swift (in target 'RackRushKids' from project 'RackRushKids')
+
+** BUILD FAILED **
+
+
+The following build commands failed:
+	SwiftEmitModule normal x86_64 Emitting\ module\ for\ RackRushKids (in target 'RackRushKids' from project 'RackRushKids')
+	EmitSwiftModule normal x86_64 (in target 'RackRushKids' from project 'RackRushKids')
+	Building project RackRushKids with scheme RackRushKids and configuration Debug
+(3 failures)

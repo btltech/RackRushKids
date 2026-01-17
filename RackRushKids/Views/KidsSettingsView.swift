@@ -2,6 +2,7 @@ import SwiftUI
 
 struct KidsSettingsView: View {
     @ObservedObject var gameState: KidsGameState
+    @State private var showParentalControls = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -127,6 +128,11 @@ struct KidsSettingsView: View {
                             .tracking(1.5)
                         
                         VStack(spacing: 0) {
+                            Button(action: { showParentalControls = true }) {
+                                SettingsInfoRow(icon: "lock.fill", label: "Parental Controls", value: "Open")
+                            }
+                            Divider().background(Color.white.opacity(0.1))
+
                             Link(destination: URL(string: "https://github.com/btltech/RackRushKids/blob/main/PRIVACY_POLICY.md")!) {
                                 SettingsInfoRow(icon: "hand.raised.fill", label: "Privacy Policy", value: "View")
                             }
@@ -141,6 +147,9 @@ struct KidsSettingsView: View {
                 }
                 .padding()
             }
+        }
+        .sheet(isPresented: $showParentalControls) {
+            KidsParentalControlsView()
         }
     }
 }

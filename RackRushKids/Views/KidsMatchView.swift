@@ -5,7 +5,10 @@ struct KidsMatchView: View {
     @State private var showTutorial = false
     
     var body: some View {
-        VStack(spacing: 16) {
+        ZStack {
+            // Background handled by KidsContentView
+            
+            VStack(spacing: 16) {
             // Header
             HStack {
                 Button(action: { gameState.goHome() }) {
@@ -156,8 +159,9 @@ struct KidsMatchView: View {
                 
                 Button(action: { 
                     KidsAudioManager.shared.playSubmit()
-                    gameState.submitWord() 
+                    gameState.submitWord()
                 }) {
+
                     HStack(spacing: 6) {
                         Text(gameState.hasSubmitted ? "Waiting..." : "Submit")
                         if !gameState.hasSubmitted {
@@ -196,6 +200,7 @@ struct KidsMatchView: View {
                     gameState.hasSeenTutorial = true
                 }
             }
+        }
         }
     }
 }

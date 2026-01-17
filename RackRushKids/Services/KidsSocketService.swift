@@ -23,9 +23,10 @@ class KidsSocketService: ObservableObject {
     var onMatchEnd: ((_ myTotal: Int, _ oppTotal: Int, _ winner: String) -> Void)?
     var onOpponentLeft: (() -> Void)?
     
-    // Server URL - configurable per environment
+    // Server URL - use production for both DEBUG and RELEASE
+    // (localhost:3000 is typically not running; Railway handles all matchmaking)
     #if DEBUG
-    private static let defaultServerURL = "http://localhost:3000"
+    private static let defaultServerURL = "https://rackrush-server-production.up.railway.app"
     #else
     private static let defaultServerURL = "https://rackrush-server-production.up.railway.app"
     #endif

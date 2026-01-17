@@ -26,6 +26,7 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var roundEndsAt: Int = 0
     @Published var submitted = false
     @Published var opponentSubmitted = false
+    private var hasStartedFirstRound = false // Prevent duplicate starts
     @Published var myWord = ""
     @Published var myScore = 0
     @Published var oppWord = ""
@@ -36,6 +37,8 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var oppTotalScore = 0
     @Published var roundHistory: [RoundResultData] = []
     @Published var matchWinner: String?
+    @Published var isRematchRequested = false
+    @Published var opponentRematchRequested = false
     
     // Callbacks for GameState integration
     var onMatchFound: (() -> Void)?
@@ -68,8 +71,15 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     private var roundTimer: Timer?
-    private let totalRounds = 7
+    private var totalRounds: Int { configuredTotalRounds }  // Use configured value
     private let roundDurationSeconds = 30
+    
+    // Idempotency guard for endRound race condition
+    private var isEndingRound = false
+    
+    // Configurable match settings (set before finding match)
+    var configuredLetterCount: Int = 8
+    var configuredTotalRounds: Int = 7  // Default 7, can be set to 5 for younger kids
     
     override private init() {
         super.init()
@@ -122,6 +132,9 @@ class GameCenterService: NSObject, ObservableObject {
         let request = GKMatchRequest()
         request.minPlayers = minPlayers
         request.maxPlayers = maxPlayers
+        request.inviteMessage = "Let's play RackRush!"
+        // Set delegate to suppress warning (we handle async matchmaking, not invites)
+        request.recipientResponseHandler = { _, _ in }
         
         GKMatchmaker.shared().findMatch(for: request) { [weak self] match, error in
             Task { @MainActor in
@@ -155,11 +168,14 @@ class GameCenterService: NSObject, ObservableObject {
         onMatchFound?()
         
         // If host, start the first round after a delay
+        // REDUNDANT: Moved to didChange (state: .connected) to ensure peer is ready
+        /*
         if isHost {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 self.startRound()
             }
         }
+        */
     }
     
     private func updateOpponentInfo(from match: GKMatch) {
@@ -188,23 +204,31 @@ class GameCenterService: NSObject, ObservableObject {
     private func startRound() {
         guard isHost else { return }
         
+        // Reset idempotency guard for new round
+        isEndingRound = false
+        
         currentRound += 1
         
         print("🎮 Starting round \(currentRound)")
         
-        // Generate letters locally
-        let letterCount = 8  // Standard mode
+        // Kids app always uses the configured letter count (set from age group)
+        let letterCount = configuredLetterCount
+        print("🎮 startRound: currentRound=\(currentRound), configuredCount=\(configuredLetterCount), usingCount=\(letterCount)")
         let (generatedLetters, generatedBonuses) = LocalRackGenerator.shared.generate(letterCount: letterCount)
         
         letters = generatedLetters
         bonuses = generatedBonuses
         
-        print("🎮 Generated letters: \(letters)")
+        print("🎮 Generated letters (\(letters.count)): \(letters)")
         
         // Calculate round end time
+        // Only show 3-2-1 countdown for first round, others start immediately
         let now = Int(Date().timeIntervalSince1970 * 1000)
-        let delayMs = 3000  // 3 second countdown
+        let delayMs = currentRound == 1 ? 3000 : 0
+        let delaySeconds = Double(delayMs) / 1000.0
         roundEndsAt = now + delayMs + (roundDurationSeconds * 1000)
+        
+        print("🎮 Round \(currentRound) will end at \(roundEndsAt) (in \(roundDurationSeconds)s)")
         
         // Reset submission state
         submitted = false
@@ -224,15 +248,20 @@ class GameCenterService: NSObject, ObservableObject {
         )
         sendData(data)
         
-        print("🎮 Sent round data to opponent")
+        print("🎮 Sent round data to opponent, delay: \(delayMs)ms")
         
-        matchState = .countdown
-        
-        // Start countdown then switch to playing
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-            print("🎮 Countdown done, starting play!")
-            self.matchState = .playing
-            self.onRoundStart?()
+        // First round shows countdown, others go straight to playing
+        if currentRound == 1 {
+            matchState = .countdown
+            DispatchQueue.main.asyncAfter(deadline: .now() + delaySeconds) { [weak self] in
+                guard let self = self else { return }
+                print("🎮 Countdown done, starting play!")
+                self.matchState = .playing
+                self.onRoundStart?()
+            }
+        } else {
+            matchState = .playing
+            onRoundStart?()
         }
         
         // Schedule round end
@@ -272,13 +301,27 @@ class GameCenterService: NSObject, ObservableObject {
     
     private func checkBothSubmitted() {
         if submitted && opponentSubmitted {
+            print("🎮 Both submitted! Ending round \(currentRound) early.")
             roundTimer?.invalidate()
             endRound()
         }
     }
     
     private func endRound() {
-        guard matchState == .playing || matchState == .countdown else { return }
+        print("🎮 endRound called: matchState=\(matchState.rawValue), round=\(currentRound)")
+        
+        // Idempotency guard - prevent double execution
+        guard !isEndingRound else {
+            print("🎮 endRound ignored: already ending round")
+            return
+        }
+        isEndingRound = true
+        
+        guard matchState == .playing || matchState == .countdown else { 
+            print("🎮 endRound ignored: matchState is \(matchState.rawValue)")
+            isEndingRound = false
+            return 
+        }
         
         roundTimer?.invalidate()
         
@@ -337,8 +380,8 @@ class GameCenterService: NSObject, ObservableObject {
             endMatch()
         } else if isHost {
             // Start next round after delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                self.startRound()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
+                self?.startRound()
             }
         }
     }
@@ -356,9 +399,58 @@ class GameCenterService: NSObject, ObservableObject {
         
         onMatchEnd?(matchWinner ?? "tie")
         
-        // Clean up
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-            self.disconnect()
+        // Clean up after 10 seconds if no rematch requested
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) { [weak self] in
+            guard let self = self else { return }
+            if !self.isRematchRequested && !self.opponentRematchRequested {
+                self.disconnect()
+            }
+        }
+    }
+    
+    func resetForRematch() {
+        currentRound = 0
+        letters = []
+        bonuses = []
+        roundEndsAt = 0
+        submitted = false
+        opponentSubmitted = false
+        hasStartedFirstRound = false
+        myWord = ""
+        myScore = 0
+        oppWord = ""
+        oppScore = 0
+        myTotalScore = 0
+        oppTotalScore = 0
+        roundHistory = []
+        matchWinner = nil
+        isRematchRequested = false
+        opponentRematchRequested = false
+        matchState = .idle // Ready to be started by host
+    }
+    
+    func requestRematch() {
+        guard matchState == .matchEnded else { return }
+        isRematchRequested = true
+        sendData(GameData(type: .rematchRequest))
+        
+        if opponentRematchRequested {
+            acceptRematch()
+        }
+    }
+    
+    func acceptRematch() {
+        guard opponentRematchRequested else { return }
+        sendData(GameData(type: .rematchRequest)) // Send confirmation
+        
+        // Both want rematch!
+        resetForRematch()
+        
+        if isHost {
+            // Host starts after short delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                self?.startRound()
+            }
         }
     }
     
@@ -391,13 +483,21 @@ class GameCenterService: NSObject, ObservableObject {
                 opponentSubmitted = false
                 myWord = ""
                 myScore = 0
-                oppWord = ""
                 oppScore = 0
                 
-                matchState = .countdown
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                    self.matchState = .playing
-                    self.onRoundStart?()
+                print("🎮 handleReceivedData: received roundStart \(roundNum), letters=\(receivedLetters.count)")
+                
+                // Only show countdown for round 1, others start immediately
+                if roundNum == 1 {
+                    matchState = .countdown
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+                        guard let self = self else { return }
+                        self.matchState = .playing
+                        self.onRoundStart?()
+                    }
+                } else {
+                    matchState = .playing
+                    onRoundStart?()
                 }
             }
             
@@ -437,6 +537,18 @@ class GameCenterService: NSObject, ObservableObject {
             
         case .matchResult:
             matchState = .matchEnded
+            
+        case .rematchRequest:
+            opponentRematchRequested = true
+            if isRematchRequested {
+                // We've both requested, so accept/start
+                resetForRematch()
+                if isHost {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                        self?.startRound()
+                    }
+                }
+            }
         }
     }
     
@@ -460,6 +572,7 @@ class GameCenterService: NSObject, ObservableObject {
         roundEndsAt = 0
         submitted = false
         opponentSubmitted = false
+        hasStartedFirstRound = false
         myWord = ""
         myScore = 0
         oppWord = ""
@@ -468,6 +581,8 @@ class GameCenterService: NSObject, ObservableObject {
         oppTotalScore = 0
         roundHistory = []
         matchWinner = nil
+        isRematchRequested = false
+        opponentRematchRequested = false
     }
 }
 
@@ -498,9 +613,11 @@ extension GameCenterService: GKMatchDelegate {
                     print("Opponent set: \(self.opponentName), I am host: \(self.isHost)")
                     
                     // If we're now the host and haven't started, start the round
-                    if self.isHost && self.currentRound == 0 {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                            self.startRound()
+                    if self.isHost && self.currentRound == 0 && !self.hasStartedFirstRound {
+                        self.hasStartedFirstRound = true
+                        print("🎮 Host detected peer connected. Starting first round...")
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+                            self?.startRound()
                         }
                     }
                 }
@@ -532,6 +649,7 @@ struct GameData: Codable {
         case submission
         case roundResult
         case matchResult
+        case rematchRequest
     }
     
     let type: DataType

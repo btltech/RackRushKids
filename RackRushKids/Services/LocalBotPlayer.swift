@@ -12,20 +12,12 @@ class LocalBotPlayer {
     
     let id: String
     let name: String
-    let difficulty: Difficulty
+    let skillLevel: Double // 0.0 to 1.0
     
-    /// Bot delays (seconds) - kids don't want to wait either!
-    private let delays: [Difficulty: (min: Double, max: Double)] = [
-        .veryEasy: (6.0, 12.0),   // Slow enough for young kids to feel ahead
-        .easy: (5.0, 10.0),
-        .medium: (3.0, 7.0),
-        .hard: (2.0, 5.0)
-    ]
-    
-    init(difficulty: Difficulty = .medium, isKidsMode: Bool = false) {
+    init(name: String, skillLevel: Double) {
         self.id = "bot-\(UUID().uuidString)"
-        self.difficulty = difficulty
-        self.name = isKidsMode ? LocalBotPlayer.generateKidsName() : LocalBotPlayer.generateRandomName()
+        self.name = name
+        self.skillLevel = skillLevel
     }
     
     /// Schedule bot submission with callback
@@ -55,53 +47,37 @@ class LocalBotPlayer {
                 return $0.length > $1.length
             }
             
-            // Pick word based on difficulty
+            // Pick word based on skill level
             let (word, score, _) = self.pickWord(scoredWords)
             onSubmit(word, score)
         }
     }
     
-    /// Pick word based on difficulty level - kid-friendly logic
+    /// Pick word based on skillLevel - kid-friendly logic
     private func pickWord(_ scoredWords: [(word: String, score: Int, length: Int)]) -> (String, Int, Int) {
         let total = scoredWords.count
         guard total > 0 else { return ("", 0, 0) }
         
-        var pickIndex: Int
+        // Map skillLevel (0.0-1.0) to an index. 
+        // 1.0 = index 0 (best word), 0.0 = index total-1 (worst word)
+        // Add some randomness so it's not perfect
+        let baseIndex = Int(Double(total - 1) * (1.0 - skillLevel))
+        let variance = Int(Double(total) * 0.2) // 20% variance
+        let minIdx = max(0, baseIndex - variance)
+        let maxIdx = min(total - 1, baseIndex + variance)
         
-        switch difficulty {
-        case .veryEasy:
-            // Pick from bottom 60% - simpler words for young kids
-            let bottomPart = max(1, Int(Double(total) * 0.6))
-            pickIndex = total - Int.random(in: 1...bottomPart)
-            
-        case .easy:
-            // Pick from 30-70% range - moderate challenge
-            let start = Int(Double(total) * 0.3)
-            let end = Int(Double(total) * 0.7)
-            pickIndex = Int.random(in: start...max(start, end))
-            
-        case .medium:
-            // Pick from top 50% - competitive but fair
-            let top50 = max(1, Int(Double(total) * 0.5))
-            pickIndex = Int.random(in: 0..<top50)
-            
-        case .hard:
-            // Pick from top 20% - challenging
-            let top20 = max(1, Int(Double(total) * 0.2))
-            pickIndex = Int.random(in: 0..<top20)
-        }
-        
-        // Clamp index
-        pickIndex = min(pickIndex, total - 1)
-        pickIndex = max(pickIndex, 0)
+        let pickIndex = Int.random(in: minIdx...maxIdx)
         
         return scoredWords[pickIndex]
     }
     
-    /// Get random delay based on difficulty
+    /// Get random delay based on skillLevel
     private func getDelay() -> Double {
-        let range = delays[difficulty] ?? (3.0, 7.0)
-        return Double.random(in: range.min...range.max)
+        // Higher skill = faster response
+        // 0.0 = 8.0-12.0s, 1.0 = 2.0-4.0s
+        let minDelay = 12.0 - (skillLevel * 10.0) // 12 -> 2
+        let maxDelay = minDelay + 4.0
+        return Double.random(in: minDelay...maxDelay)
     }
     
     // MARK: - Name Generation

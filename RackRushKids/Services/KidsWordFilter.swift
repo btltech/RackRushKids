@@ -118,6 +118,24 @@ class KidsWordFilter {
         // Word is considered safe
         return true
     }
+
+    /// Best-effort safety check for externally sourced definition text.
+    func isSafeDefinitionText(_ text: String, forAge ageGroup: KidsAgeGroup) -> Bool {
+        let tokens = text
+            .lowercased()
+            .components(separatedBy: CharacterSet.alphanumerics.inverted)
+            .filter { !$0.isEmpty }
+
+        if tokens.contains(where: { blockedWords.contains($0) }) {
+            return false
+        }
+
+        if ageGroup == .young, tokens.contains(where: { blockedForYoung.contains($0) }) {
+            return false
+        }
+
+        return true
+    }
     
     /// Generate a kid-friendly rejection message based on age
     func rejectionMessage(for ageGroup: KidsAgeGroup) -> String {
@@ -162,13 +180,25 @@ class KidsWordFilter {
     
     // MARK: - Bot Logic
     
-    /// Find a valid word from the safe dictionary that can be formed with the given letters
-    func getPossibleWord(from letters: [String], for ageGroup: KidsAgeGroup) -> String? {
+    /// Find a valid word from the safe dictionary that can be formed with the given letters, respecting skill level
+    func getPossibleWord(from letters: [String], for ageGroup: KidsAgeGroup, skillLevel: Double = 0.5) -> String? {
         // Find all valid words in the current (kids) dictionary
         let validWords = LocalDictionary.shared.findValidWords(letters: letters)
+        guard !validWords.isEmpty else { return nil }
         
-        // Return a random one if any exist
-        return validWords.randomElement()
+        // Score them to rank by difficulty
+        let scored = validWords.map { word -> (word: String, score: Int) in
+            let score = LocalScorer.shared.calculate(word: word, rack: letters, bonuses: [])
+            return (word, score)
+        }.sorted { $0.score > $1.score }
+        
+        // Pick based on skill level
+        let targetIdx = Int(Double(scored.count - 1) * (1.0 - skillLevel))
+        let variance = max(1, Int(Double(scored.count) * 0.2))
+        let minIdx = max(0, targetIdx - variance)
+        let maxIdx = min(scored.count - 1, targetIdx + variance)
+        
+        return scored[Int.random(in: minIdx...maxIdx)].word
     }
     
     private func getLexicon(for ageGroup: KidsAgeGroup) -> Set<String> {

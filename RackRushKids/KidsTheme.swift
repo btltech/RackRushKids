@@ -34,6 +34,16 @@ struct KidsTheme {
         endPoint: .trailing
     )
     
+    static let partyGradient = LinearGradient(
+        colors: [Color(hex: "FF6B6B"), Color(hex: "FFE66D")],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
+    
+    // Solid Colors
+    static let accent = Color(hex: "00d2ff")
+    static let background = Color(hex: "667eea")
+    
     static let playerSelfGradient = LinearGradient(
         colors: [Color(hex: "FFD700"), Color(hex: "FF8C00")],
         startPoint: .topLeading,
