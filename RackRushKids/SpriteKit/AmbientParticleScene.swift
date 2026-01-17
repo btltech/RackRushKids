@@ -128,7 +128,7 @@ struct SKAmbientParticlesView: View {
             newScene.isKidsMode = isKidsMode
             scene = newScene
         }
-        .onChange(of: scenePhase) { newPhase in
+        .onChange(of: scenePhase) { _, newPhase in
             // Pause scene when backgrounded to prevent GPU errors
             switch newPhase {
             case .active:
