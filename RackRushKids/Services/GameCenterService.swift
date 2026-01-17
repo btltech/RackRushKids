@@ -56,6 +56,7 @@ class GameCenterService: NSObject, ObservableObject {
         case playing
         case roundEnded
         case matchEnded
+        case opponentReconnecting  // NEW: Grace period for opponent disconnect
     }
     
     struct RoundResultData {
@@ -76,6 +77,13 @@ class GameCenterService: NSObject, ObservableObject {
     
     // Idempotency guard for endRound race condition
     private var isEndingRound = false
+    
+    // Reconnection grace period
+    private var reconnectionTimer: Timer?
+    private let reconnectionGraceSeconds: Double = 5.0
+    @Published var reconnectionTimeRemaining: Double = 0
+    private var disconnectCount: Int = 0
+    private let maxDisconnectsBeforeForfeit = 2
     
     // Configurable match settings (set before finding match)
     var configuredLetterCount: Int = 8
@@ -583,6 +591,12 @@ class GameCenterService: NSObject, ObservableObject {
         matchWinner = nil
         isRematchRequested = false
         opponentRematchRequested = false
+        
+        // Reset reconnection state
+        disconnectCount = 0
+        reconnectionTimer?.invalidate()
+        reconnectionTimer = nil
+        reconnectionTimeRemaining = 0
     }
 }
 
@@ -621,16 +635,68 @@ extension GameCenterService: GKMatchDelegate {
                         }
                     }
                 }
+                
+                // Handle reconnection - cancel grace period timer
+                if self.matchState == .opponentReconnecting {
+                    print("✅ Opponent reconnected!")
+                    self.reconnectionTimer?.invalidate()
+                    self.reconnectionTimer = nil
+                    self.reconnectionTimeRemaining = 0
+                    self.matchState = .playing
+                    self.error = nil
+                }
             case .disconnected:
-                print("Player disconnected: \(player.displayName)")
-                self.error = "Opponent disconnected"
-                self.matchWinner = "you"  // Win by forfeit
-                self.matchState = .matchEnded
-                onMatchEnd?("you")
+                print("⚠️ Player disconnected: \(player.displayName)")
+                self.disconnectCount += 1
+                
+                // Check if exceeded max disconnects
+                if self.disconnectCount >= self.maxDisconnectsBeforeForfeit {
+                    print("❌ Too many disconnects (\(self.disconnectCount)), auto-forfeit")
+                    self.forfeitOpponent()
+                    return
+                }
+                
+                // Start grace period
+                self.matchState = .opponentReconnecting
+                self.reconnectionTimeRemaining = self.reconnectionGraceSeconds
+                self.error = "Opponent disconnected. Waiting for reconnection..."
+                
+                // Pause round timer during grace period
+                self.roundTimer?.invalidate()
+                
+                // Start countdown
+                self.reconnectionTimer?.invalidate()
+                self.reconnectionTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
+                    Task { @MainActor in
+                        guard let self = self else {
+                            timer.invalidate()
+                            return
+                        }
+                        
+                        self.reconnectionTimeRemaining -= 0.1
+                        
+                        if self.reconnectionTimeRemaining <= 0 {
+                            timer.invalidate()
+                            self.forfeitOpponent()
+                        }
+                    }
+                }
             default:
                 break
             }
         }
+    }
+    
+    /// Forfeit opponent after grace period expires
+    private func forfeitOpponent() {
+        reconnectionTimer?.invalidate()
+        reconnectionTimer = nil
+        reconnectionTimeRemaining = 0
+        error = "Opponent forfeited"
+        matchWinner = "you"  // Win by forfeit
+        matchState = .matchEnded
+        onMatchEnd?("you")
+        print("🏆 You win by forfeit!")
     }
     
     nonisolated func match(_ match: GKMatch, didFailWithError error: Error?) {
