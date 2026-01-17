@@ -67,6 +67,25 @@ struct KidsPartySetupView: View {
             Text("PARTY TIME!")
                 .font(.system(size: 32, weight: .black, design: .rounded))
                 .foregroundStyle(KidsTheme.partyGradient)
+            
+            Text("Pass the device to play!")
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundColor(KidsTheme.textMuted)
+            
+            // Network mode button
+            Button(action: { gameState.screen = .networkParty }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "wifi")
+                    Text("Play on Different Devices!")
+                }
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundColor(KidsTheme.accent)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(KidsTheme.accent.opacity(0.15))
+                .clipShape(Capsule())
+            }
+            .padding(.top, 8)
         }
     }
     
