@@ -7,8 +7,9 @@ struct KidsPartySetupView: View {
     
     @State private var playerCount: Int = 2
     @State private var playerNames: [String] = ["", "", "", ""]
-    @State private var selectedRounds: Int = 3
+    @State private var selectedRounds: Int = 5
     @State private var showingGame = false
+    @State private var partySessionId = UUID()
     
     var body: some View {
         ZStack {
@@ -40,6 +41,7 @@ struct KidsPartySetupView: View {
         }
         .fullScreenCover(isPresented: $showingGame) {
             KidsPartyCoordinator(partyState: partyState, gameState: gameState)
+                .id(partySessionId)
         }
     }
     
@@ -56,6 +58,7 @@ struct KidsPartySetupView: View {
                     .font(.system(size: 16, weight: .semibold, design: .rounded))
                     .foregroundColor(KidsTheme.textSecondary)
                 }
+                .minimumTouchTarget()
                 Spacer()
             }
             .padding(.horizontal, 20)
@@ -73,10 +76,16 @@ struct KidsPartySetupView: View {
                 .foregroundColor(KidsTheme.textMuted)
             
             // Network mode button
-            Button(action: { gameState.screen = .networkParty }) {
+            Button(action: {
+                guard gameState.onlinePlayAllowed else {
+                    gameState.screen = .settings
+                    return
+                }
+                gameState.screen = .networkParty
+            }) {
                 HStack(spacing: 8) {
-                    Image(systemName: "wifi")
-                    Text("Play on Different Devices!")
+                    Image(systemName: gameState.onlinePlayAllowed ? "wifi" : "lock.fill")
+                    Text(gameState.onlinePlayAllowed ? "Play on Different Devices!" : "Play on Different Devices (Parent Only)")
                 }
                 .font(.system(size: 14, weight: .bold, design: .rounded))
                 .foregroundColor(KidsTheme.accent)
@@ -85,6 +94,8 @@ struct KidsPartySetupView: View {
                 .background(KidsTheme.accent.opacity(0.15))
                 .clipShape(Capsule())
             }
+            .disabled(!gameState.onlinePlayAllowed)
+            .opacity(gameState.onlinePlayAllowed ? 1.0 : 0.6)
             .padding(.top, 8)
         }
     }
@@ -162,22 +173,44 @@ struct KidsPartySetupView: View {
                 .font(.system(size: 13, weight: .bold, design: .rounded))
                 .foregroundColor(KidsTheme.textMuted)
             
-            HStack(spacing: 12) {
-                ForEach([3, 5], id: \.self) { count in
-                    Button(action: {
-                        selectedRounds = count
-                        KidsAudioManager.shared.playPop()
-                    }) {
-                        Text("\(count)")
-                            .font(.system(size: 24, weight: .bold, design: .rounded))
-                            .foregroundColor(selectedRounds == count ? .white : KidsTheme.textSecondary)
-                            .frame(width: 70, height: 60)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .fill(selectedRounds == count ? AnyShapeStyle(KidsTheme.accent) : AnyShapeStyle(KidsTheme.surface))
-                            )
-                    }
+            HStack(spacing: 14) {
+                Button(action: {
+                    selectedRounds = max(5, selectedRounds - 1)
+                    KidsAudioManager.shared.playPop()
+                }) {
+                    Image(systemName: "minus")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 64, height: 60)
+                        .background(KidsTheme.surface.opacity(selectedRounds <= 5 ? 0.5 : 1.0))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
+                .disabled(selectedRounds <= 5)
+                
+                Text("\(selectedRounds)")
+                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .foregroundColor(.white)
+                    .frame(width: 90, height: 60)
+                    .background(KidsTheme.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                
+                Button(action: {
+                    selectedRounds = min(15, selectedRounds + 1)
+                    KidsAudioManager.shared.playPop()
+                }) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 64, height: 60)
+                        .background(KidsTheme.surface.opacity(selectedRounds >= 15 ? 0.5 : 1.0))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
+                .disabled(selectedRounds >= 15)
+                
+                Text("games")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundColor(KidsTheme.textSecondary)
+                
                 Spacer()
             }
         }
@@ -207,6 +240,8 @@ struct KidsPartySetupView: View {
     
     private func startParty() {
         KidsAudioManager.shared.playSuccess()
+        partySessionId = UUID()
+        partyState.resetParty()
         
         let names = (0..<playerCount).map { idx in
             playerNames[idx].isEmpty ? "Player \(idx + 1)" : playerNames[idx]

@@ -10,6 +10,8 @@ struct KidsNetworkPartyView: View {
     @State private var mode: LobbyMode = .select
     @State private var showingGame = false
     @StateObject private var partyState = KidsPartyGameState()
+    @State private var selectedRounds: Int = 5
+    @State private var networkGameSessionId = UUID()
     
     enum LobbyMode {
         case select
@@ -48,6 +50,7 @@ struct KidsNetworkPartyView: View {
         }
         .fullScreenCover(isPresented: $showingGame) {
             KidsNetworkPartyGameView(partyState: partyState, gameState: gameState)
+                .id(networkGameSessionId)
         }
     }
     
@@ -60,7 +63,9 @@ struct KidsNetworkPartyView: View {
                     if mode == .select {
                         gameState.screen = .home
                     } else {
-                        multipeerService.stopAll()
+                        multipeerService.disconnect()
+                        partyState.resetParty()
+                        selectedRounds = 5
                         mode = .select
                     }
                 }) {
@@ -71,6 +76,7 @@ struct KidsNetworkPartyView: View {
                     .font(.system(size: 16, weight: .semibold, design: .rounded))
                     .foregroundColor(KidsTheme.textSecondary)
                 }
+                .minimumTouchTarget()
                 Spacer()
             }
             
@@ -210,6 +216,56 @@ struct KidsNetworkPartyView: View {
                 }
             }
             
+            // Rounds (host controls)
+            VStack(alignment: .leading, spacing: 10) {
+                Text("ROUNDS")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundColor(KidsTheme.textMuted)
+                
+                HStack(spacing: 14) {
+                    Button(action: {
+                        selectedRounds = max(5, selectedRounds - 1)
+                        KidsAudioManager.shared.playPop()
+                        multipeerService.send(.gameSettings(letterCount: partyState.letterCount, rounds: selectedRounds))
+                    }) {
+                        Image(systemName: "minus")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 64, height: 56)
+                            .background(KidsTheme.surface.opacity(selectedRounds <= 5 ? 0.5 : 1.0))
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                    .disabled(selectedRounds <= 5)
+                    
+                    Text("\(selectedRounds)")
+                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .foregroundColor(.white)
+                        .frame(width: 90, height: 56)
+                        .background(KidsTheme.accent.opacity(0.25))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    
+                    Button(action: {
+                        selectedRounds = min(15, selectedRounds + 1)
+                        KidsAudioManager.shared.playPop()
+                        multipeerService.send(.gameSettings(letterCount: partyState.letterCount, rounds: selectedRounds))
+                    }) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 64, height: 56)
+                            .background(KidsTheme.surface.opacity(selectedRounds >= 15 ? 0.5 : 1.0))
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                    .disabled(selectedRounds >= 15)
+                    
+                    Text("games")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundColor(KidsTheme.textSecondary)
+                    
+                    Spacer()
+                }
+            }
+            
             // Start button
             if multipeerService.lobbyPlayers.count >= 2 {
                 Button(action: startNetworkGame) {
@@ -314,6 +370,10 @@ struct KidsNetworkPartyView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                     
+                    Text("Rounds: \(selectedRounds)")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(KidsTheme.textSecondary)
+                    
                     Text("Waiting for host to start...")
                         .font(.system(size: 14, design: .rounded))
                         .foregroundColor(KidsTheme.textMuted)
@@ -355,23 +415,24 @@ struct KidsNetworkPartyView: View {
     
     private func joinParty(_ host: MCPeerID) {
         multipeerService.joinHost(host)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            multipeerService.send(.playerJoined(name: playerName, colorHex: KidsPartyGameState.playerColors[1]))
-        }
-        
+
         KidsAudioManager.shared.playSuccess()
     }
     
     private func startNetworkGame() {
-        let names = multipeerService.lobbyPlayers.map { $0.name }
-        partyState.setupParty(
-            playerNames: names,
+        let clampedRounds = min(max(selectedRounds, 5), 15)
+        selectedRounds = clampedRounds
+        networkGameSessionId = UUID()
+        partyState.resetParty()
+        
+        partyState.setupNetworkParty(
+            networkPlayers: multipeerService.lobbyPlayers,
             ageGroup: KidsAgeGroup(rawValue: gameState.ageGroup) ?? .medium,
-            rounds: 3
+            rounds: clampedRounds
         )
         partyState.isNetworkGame = true
         
+        multipeerService.send(.gameSettings(letterCount: partyState.letterCount, rounds: clampedRounds))
         multipeerService.send(.startGame)
         
         showingGame = true
@@ -380,12 +441,17 @@ struct KidsNetworkPartyView: View {
     
     private func handleMessage(_ message: PartyMultipeerMessage, from peer: MCPeerID) {
         switch message {
+        case .gameSettings(_, let rounds):
+            selectedRounds = min(max(rounds, 5), 15)
+            
         case .startGame:
-            let names = multipeerService.lobbyPlayers.map { $0.name }
-            partyState.setupParty(
-                playerNames: names,
+            let clampedRounds = min(max(selectedRounds, 5), 15)
+            networkGameSessionId = UUID()
+            partyState.resetParty()
+            partyState.setupNetworkParty(
+                networkPlayers: multipeerService.lobbyPlayers,
                 ageGroup: KidsAgeGroup(rawValue: gameState.ageGroup) ?? .medium,
-                rounds: 3
+                rounds: clampedRounds
             )
             partyState.isNetworkGame = true
             showingGame = true
@@ -414,7 +480,7 @@ struct KidsNetworkPartyGameView: View {
     
     @State private var phase: GamePhase = .waitingForRound
     @State private var currentRound = 1
-    @State private var totalRounds = 3
+    @State private var totalRounds = 5
     @State private var rack: [String] = []
     @State private var bonuses: [(Int, String)] = []
     @State private var selectedIndices: [Int] = []
@@ -425,6 +491,7 @@ struct KidsNetworkPartyGameView: View {
     @State private var myPlayerId: String = ""
     @State private var submissions: [String: (playerName: String, word: String, score: Int)] = [:]
     @State private var showingExit = false
+    @State private var connectionLost = false
     
     var body: some View {
         ZStack {
@@ -457,6 +524,21 @@ struct KidsNetworkPartyGameView: View {
                 dismiss()
             }
         }
+        .alert("Connection Lost", isPresented: $connectionLost) {
+            Button("OK") {
+                multipeerService.disconnect()
+                dismiss()
+            }
+        } message: {
+            Text("A player disconnected. The party has ended.")
+        }
+        .onChange(of: multipeerService.isConnected) { _, isConnected in
+            // If we lose connection during a game, show alert
+            if !isConnected && phase != .gameOver {
+                connectionLost = true
+                timer?.invalidate()
+            }
+        }
     }
     
     private var headerView: some View {
@@ -466,6 +548,7 @@ struct KidsNetworkPartyGameView: View {
                     .font(.title2.weight(.semibold))
                     .foregroundColor(KidsTheme.textSecondary)
             }
+            .minimumTouchTarget()
             
             Spacer()
             
@@ -514,18 +597,12 @@ struct KidsNetworkPartyGameView: View {
             Spacer()
             
             // Letter rack
-            VStack(spacing: 10) {
-                HStack(spacing: 10) {
-                    ForEach(0..<min(4, rack.count), id: \.self) { index in
-                        letterTile(at: index)
-                    }
-                }
-                if rack.count > 4 {
-                    HStack(spacing: 10) {
-                        ForEach(4..<rack.count, id: \.self) { index in
-                            letterTile(at: index)
-                        }
-                    }
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: min(rack.count, 5)),
+                spacing: 10
+            ) {
+                ForEach(rack.indices, id: \.self) { index in
+                    letterTile(at: index)
                 }
             }
             
@@ -558,14 +635,40 @@ struct KidsNetworkPartyGameView: View {
     private func letterTile(at index: Int) -> some View {
         let letter = rack[index]
         let isSelected = selectedIndices.contains(index)
+        let selectionOrder = selectedIndices.firstIndex(of: index).map { $0 + 1 }
+        let bonusType = bonuses.first(where: { $0.0 == index })?.1
         
-        return Button(action: { toggleLetter(at: index) }) {
-            Text(letter.uppercased())
-                .font(.system(size: 26, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-                .frame(width: 56, height: 64)
-                .background(isSelected ? KidsTheme.accent : KidsTheme.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+        return LetterTile(
+            letter: letter,
+            isSelected: isSelected,
+            selectionOrder: selectionOrder,
+            action: { toggleLetter(at: index) }
+        )
+        .overlay(alignment: .topLeading) {
+            if let bonusType {
+                Text(bonusType)
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(bonusColor(for: bonusType))
+                    .clipShape(Capsule())
+                    .padding(4)
+                    .allowsHitTesting(false)
+            }
+        }
+    }
+    
+    private func bonusColor(for type: String) -> Color {
+        switch type {
+        case "DL":
+            return Color(hex: "4ECDC4").opacity(0.9)
+        case "TL":
+            return Color(hex: "A78BFA").opacity(0.9)
+        case "DW":
+            return Color(hex: "FF8E53").opacity(0.9)
+        default:
+            return KidsTheme.surface
         }
     }
     
@@ -584,12 +687,46 @@ struct KidsNetworkPartyGameView: View {
     }
     
     private var resultsView: some View {
-        VStack(spacing: 24) {
+        let topScore = submissions.values.map { $0.score }.max() ?? 0
+        let roundWinners = submissions
+            .filter { $0.value.score == topScore }
+            .map { $0.value.playerName }
+            .sorted()
+        
+        return VStack(spacing: 24) {
             Text("ROUND \(currentRound) RESULTS")
                 .font(.system(size: 20, weight: .black, design: .rounded))
                 .foregroundColor(.white)
+
+            if !roundWinners.isEmpty {
+                VStack(spacing: 8) {
+                    if roundWinners.count == 1, let winner = roundWinners.first {
+                        HStack(spacing: 10) {
+                            Text("🏅")
+                                .font(.system(size: 24))
+                            Text("\(winner) wins!")
+                                .font(.system(size: 20, weight: .black, design: .rounded))
+                                .foregroundStyle(KidsTheme.partyGradient)
+                        }
+                    } else {
+                        Text("It's a tie!")
+                            .font(.system(size: 20, weight: .black, design: .rounded))
+                            .foregroundStyle(KidsTheme.partyGradient)
+                        
+                        Text(roundWinners.joined(separator: " & "))
+                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .foregroundColor(KidsTheme.textSecondary)
+                    }
+                    
+                    Text("Top score: \(topScore)")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundColor(KidsTheme.textMuted)
+                }
+            }
             
-            ForEach(Array(submissions.values.sorted { $0.score > $1.score }), id: \.playerName) { sub in
+            // Use playerId as stable identity (names may not be unique)
+            ForEach(submissions.sorted(by: { $0.value.score > $1.value.score }), id: \.key) { entry in
+                let sub = entry.value
                 HStack {
                     Text(sub.playerName)
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
@@ -624,17 +761,26 @@ struct KidsNetworkPartyGameView: View {
     }
     
     private var gameOverView: some View {
-        VStack(spacing: 24) {
+        let winners = partyState.tiedWinners
+        return VStack(spacing: 24) {
             Spacer()
             Text("🏆").font(.system(size: 100))
             Text("AMAZING!")
                 .font(.system(size: 32, weight: .black, design: .rounded))
                 .foregroundStyle(KidsTheme.partyGradient)
             
-            if let winner = partyState.partyWinner {
+            if winners.count == 1, let winner = winners.first {
                 Text("\(winner.name) wins!")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
+            } else if winners.count > 1 {
+                Text("It's a tie!")
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                
+                Text(winners.map { $0.name }.joined(separator: " & "))
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .foregroundColor(KidsTheme.textSecondary)
             }
             
             Spacer()
@@ -658,12 +804,9 @@ struct KidsNetworkPartyGameView: View {
     // MARK: - Game Logic
     
     private func setupGame() {
-        // Find my player ID
-        if multipeerService.isHosting {
-            myPlayerId = multipeerService.lobbyPlayers.first { $0.isHost }?.id ?? ""
-        } else {
-            myPlayerId = multipeerService.lobbyPlayers.first { !$0.isHost }?.id ?? ""
-        }
+        // Find my player ID (self is always first in lobbyPlayers)
+        myPlayerId = multipeerService.myId
+        totalRounds = min(max(partyState.totalRounds, 5), 15)
         
         print("🎈 KidsNetworkPartyGame setupGame - myPlayerId: \(myPlayerId), isHosting: \(multipeerService.isHosting)")
         
@@ -671,6 +814,19 @@ struct KidsNetworkPartyGameView: View {
         multipeerService.onMessageReceived = { [self] message, peer in
             DispatchQueue.main.async {
                 self.handleMessage(message)
+            }
+        }
+        
+        // Handle player disconnects - auto-submit empty word for them
+        multipeerService.onPlayerDisconnected = { [self] peer in
+            DispatchQueue.main.async {
+                let disconnectedId = peer.displayName
+                // If they haven't submitted yet, add empty submission so round can continue
+                if self.submissions[disconnectedId] == nil {
+                    let playerName = self.multipeerService.lobbyPlayers.first { $0.id == disconnectedId }?.name ?? disconnectedId
+                    self.submissions[disconnectedId] = (playerName: playerName, word: "", score: 0)
+                    self.checkAllSubmitted()
+                }
             }
         }
         
@@ -718,8 +874,8 @@ struct KidsNetworkPartyGameView: View {
     }
     
     private func toggleLetter(at index: Int) {
-        if let idx = selectedIndices.firstIndex(of: index) {
-            selectedIndices.remove(at: idx)
+        if let existingIndex = selectedIndices.firstIndex(of: index) {
+            selectedIndices.removeSubrange(existingIndex...)
         } else {
             selectedIndices.append(index)
         }
@@ -737,18 +893,19 @@ struct KidsNetworkPartyGameView: View {
         hasSubmitted = true
         timer?.invalidate()
         
-        let validation = LocalDictionary.shared.validate(currentWord, rack: rack)
-        let score = validation.valid ? LocalScorer.shared.calculate(word: currentWord, rack: rack, bonuses: bonuses) : 0
+        let validation = LocalDictionary.shared.validate(currentWord, rack: rack, minLength: partyState.ageGroup.minWordLength)
+        let isValid = validation.valid && !currentWord.isEmpty
+        let score = isValid ? LocalScorer.shared.calculate(word: currentWord, rack: rack, bonuses: bonuses) : 0
         let time = Double(partyState.roundDuration - timeRemaining)
         
         let playerName = multipeerService.lobbyPlayers.first { $0.id == myPlayerId }?.name ?? "Me"
         submissions[myPlayerId] = (playerName: playerName, word: currentWord.uppercased(), score: score)
         
-        if let idx = partyState.players.firstIndex(where: { $0.name == playerName }) {
+        if let idx = partyState.players.firstIndex(where: { $0.networkId == myPlayerId }) {
             partyState.players[idx].totalScore += score
         }
         
-        multipeerService.send(.wordSubmitted(playerId: myPlayerId, word: currentWord, score: score, time: time, isValid: validation.valid))
+        multipeerService.send(.wordSubmitted(playerId: myPlayerId, word: currentWord, score: score, time: time, isValid: isValid))
         
         phase = .waitingForOthers
         checkAllSubmitted()
@@ -782,10 +939,12 @@ struct KidsNetworkPartyGameView: View {
             beginRound(rack: rack, bonuses: bonuses)
             
         case .wordSubmitted(let playerId, let word, let score, _, _):
+            // Use the score sent by the submitter to ensure all devices are in sync
             let playerName = multipeerService.lobbyPlayers.first { $0.id == playerId }?.name ?? playerId
+            
             submissions[playerId] = (playerName: playerName, word: word.uppercased(), score: score)
             
-            if let idx = partyState.players.firstIndex(where: { $0.name == playerName }) {
+            if let idx = partyState.players.firstIndex(where: { $0.networkId == playerId }) {
                 partyState.players[idx].totalScore += score
             }
             checkAllSubmitted()

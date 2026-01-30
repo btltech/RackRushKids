@@ -160,11 +160,13 @@ class ConfettiScene: SKScene {
 struct SKConfettiView: View {
     var isKidsMode: Bool = false
     @State private var scene: ConfettiScene?
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some View {
+        let isPaused = scenePhase != .active
         GeometryReader { geo in
             if let scene = scene {
-                SpriteView(scene: scene, options: [.allowsTransparency])
+                SpriteView(scene: scene, isPaused: isPaused, options: [.allowsTransparency])
                     .ignoresSafeArea()
             }
         }

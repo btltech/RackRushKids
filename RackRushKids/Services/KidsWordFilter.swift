@@ -183,7 +183,7 @@ class KidsWordFilter {
     /// Find a valid word from the safe dictionary that can be formed with the given letters, respecting skill level
     func getPossibleWord(from letters: [String], for ageGroup: KidsAgeGroup, skillLevel: Double = 0.5) -> String? {
         // Find all valid words in the current (kids) dictionary
-        let validWords = LocalDictionary.shared.findValidWords(letters: letters)
+        let validWords = LocalDictionary.shared.findValidWords(letters: letters, minLength: ageGroup.minWordLength)
         guard !validWords.isEmpty else { return nil }
         
         // Score them to rank by difficulty

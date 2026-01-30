@@ -45,7 +45,11 @@ struct KidsContentView: View {
                         KidsPartySetupView(gameState: gameState)
                         
                     case .networkParty:
-                        KidsNetworkPartyView(gameState: gameState)
+                        if gameState.onlinePlayAllowed {
+                            KidsNetworkPartyView(gameState: gameState)
+                        } else {
+                            KidsSettingsView(gameState: gameState)
+                        }
                     }
                 }
                 .transition(.opacity.animation(.easeInOut(duration: 0.2)))

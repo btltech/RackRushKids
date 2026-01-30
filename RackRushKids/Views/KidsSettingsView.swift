@@ -6,12 +6,13 @@ struct KidsSettingsView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
+            // Header - extends into safe area
             HStack {
                 Button(action: { gameState.screen = .home }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(KidsTheme.textSecondary)
+                        .frame(width: 44, height: 44) // 44pt tap target
                 }
                 
                 Spacer()
@@ -22,10 +23,12 @@ struct KidsSettingsView: View {
                 
                 Spacer()
                 
-                Color.clear.frame(width: 24)
+                Color.clear.frame(width: 44, height: 44)
             }
-            .padding()
-            .background(KidsTheme.surface)
+            .padding(.horizontal)
+            .padding(.top, 8)
+            .padding(.bottom, 12)
+            .background(KidsTheme.surface.ignoresSafeArea(edges: .top))
             
             ScrollView {
                 VStack(spacing: 24) {
@@ -59,7 +62,11 @@ struct KidsSettingsView: View {
                             Divider().background(Color.white.opacity(0.1))
                             SettingsInfoRow(icon: "number", label: "Rounds per Match", value: "7 rounds")
                             Divider().background(Color.white.opacity(0.1))
-                            SettingsInfoRow(icon: "textformat.abc", label: "Letters", value: "\(gameState.selectedAgeGroup.letterCount) letters")
+                            SettingsInfoRow(
+                                icon: "textformat.abc",
+                                label: "Letters",
+                                value: "\(gameState.selectedAgeGroup.effectiveLetterCount(extraChallengeEnabled: gameState.extraChallengeEnabled)) letters"
+                            )
                         }
                         .background(KidsTheme.surfaceCard)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
@@ -100,7 +107,7 @@ struct KidsSettingsView: View {
                             .tracking(1.5)
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Word Rush Kids")
+                            Text("RackRush Kids")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .foregroundColor(KidsTheme.textPrimary)
                             
@@ -130,15 +137,6 @@ struct KidsSettingsView: View {
                         VStack(spacing: 0) {
                             Button(action: { showParentalControls = true }) {
                                 SettingsInfoRow(icon: "lock.fill", label: "Parental Controls", value: "Open")
-                            }
-                            Divider().background(Color.white.opacity(0.1))
-
-                            Link(destination: URL(string: "https://github.com/btltech/RackRushKids/blob/main/PRIVACY_POLICY.md")!) {
-                                SettingsInfoRow(icon: "hand.raised.fill", label: "Privacy Policy", value: "View")
-                            }
-                            Divider().background(Color.white.opacity(0.1))
-                            Link(destination: URL(string: "https://github.com/btltech/RackRushKids/blob/main/SUPPORT.md")!) {
-                                SettingsInfoRow(icon: "envelope.fill", label: "Support", value: "Contact")
                             }
                         }
                         .background(KidsTheme.surfaceCard)

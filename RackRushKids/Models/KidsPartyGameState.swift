@@ -3,6 +3,8 @@ import SwiftUI
 /// Manages Party Mode state for Kids - simplified for children
 @MainActor
 class KidsPartyGameState: ObservableObject {
+
+    @AppStorage("kidsExtraChallengeEnabled") private var extraChallengeEnabled: Bool = false
     
     deinit {
         timer?.invalidate()
@@ -19,10 +21,12 @@ class KidsPartyGameState: ObservableObject {
     
     // MARK: - Settings
     @Published var ageGroup: KidsAgeGroup = .medium
-    @Published var totalRounds: Int = 3
+    @Published var totalRounds: Int = 5
     
     var letterCount: Int {
-        ageGroup.letterCount
+        // Keep network party stable across devices; apply Extra Challenge only locally.
+        if isNetworkGame { return ageGroup.letterCount }
+        return ageGroup.effectiveLetterCount(extraChallengeEnabled: extraChallengeEnabled)
     }
     
     // MARK: - Round State
@@ -60,9 +64,10 @@ class KidsPartyGameState: ObservableObject {
     
     // MARK: - Setup
     
-    func setupParty(playerNames: [String], ageGroup: KidsAgeGroup, rounds: Int = 3) {
+    func setupParty(playerNames: [String], ageGroup: KidsAgeGroup, rounds: Int = 5) {
+        let clampedRounds = min(max(rounds, 5), 15)
         self.ageGroup = ageGroup
-        self.totalRounds = rounds
+        self.totalRounds = clampedRounds
         self.currentRound = 0
         self.currentPlayerIndex = 0
         self.roundHistory = []
@@ -76,6 +81,26 @@ class KidsPartyGameState: ObservableObject {
         }
         
         print("🎈 Kids Party setup: \(players.map { $0.name })")
+    }
+    
+    func setupNetworkParty(networkPlayers: [NetworkPartyPlayer], ageGroup: KidsAgeGroup, rounds: Int = 5) {
+        let clampedRounds = min(max(rounds, 5), 15)
+        self.ageGroup = ageGroup
+        self.totalRounds = clampedRounds
+        self.currentRound = 0
+        self.currentPlayerIndex = 0
+        self.roundHistory = []
+        
+        players = networkPlayers.prefix(4).enumerated().map { index, player in
+            KidsPartyPlayer(
+                name: player.name.isEmpty ? "Player \(index + 1)" : player.name,
+                colorHex: player.colorHex,
+                emoji: Self.playerEmojis[index % 4],
+                networkId: player.id
+            )
+        }
+        
+        print("🎈 Kids Network Party setup: \(players.map { $0.name })")
     }
     
     // MARK: - Round Flow
@@ -139,6 +164,29 @@ class KidsPartyGameState: ObservableObject {
         selectedIndices = []
         currentWord = ""
     }
+
+    func shuffleRack() {
+        guard !hasSubmitted else { return }
+        guard selectedIndices.isEmpty else { return }
+        guard !sharedRack.isEmpty else { return }
+        // Avoid desync in network party unless we implement a broadcast.
+        guard !isNetworkGame else { return }
+
+        let bonusByIndex: [Int: String] = Dictionary(uniqueKeysWithValues: sharedBonuses.map { ($0.index, $0.type) })
+
+        var items: [(letter: String, bonusType: String?)] = []
+        items.reserveCapacity(sharedRack.count)
+        for idx in sharedRack.indices {
+            items.append((letter: sharedRack[idx], bonusType: bonusByIndex[idx]))
+        }
+
+        items.shuffle()
+        sharedRack = items.map { $0.letter }
+        sharedBonuses = items.enumerated().compactMap { newIndex, item in
+            guard let type = item.bonusType else { return nil }
+            return (index: newIndex, type: type)
+        }
+    }
     
     // MARK: - Submission
     
@@ -149,16 +197,22 @@ class KidsPartyGameState: ObservableObject {
         
         let timeToSubmit = Date().timeIntervalSince(roundStartTime)
         
-        // Use kids dictionary for age-appropriate validation
-        let isValid = LocalDictionary.shared.isValid(currentWord) && !currentWord.isEmpty
-        let score = isValid ? currentWord.count * 10 : 0  // Simple scoring for kids
+        // Validate and score (keep consistent with other Kids modes)
+        let validation = LocalDictionary.shared.validate(currentWord, rack: sharedRack, minLength: ageGroup.minWordLength)
+        let isValid = validation.valid && !currentWord.isEmpty
+        let score: Int
+        if isValid {
+            score = LocalScorer.shared.calculate(word: currentWord, rack: sharedRack, bonuses: sharedBonuses)
+        } else {
+            score = 0
+        }
         
         let result = KidsPartyResult(
             word: currentWord.uppercased(),
             score: score,
             timeToSubmit: timeToSubmit,
             isValid: isValid,
-            reason: timeout ? "Time's up!" : (!isValid && !currentWord.isEmpty ? "Try again!" : nil)
+            reason: timeout ? "Time's up!" : (!isValid && !currentWord.isEmpty ? "Try again!" : (currentWord.isEmpty ? "No word submitted" : nil))
         )
         
         if let player = currentPlayer {
@@ -215,6 +269,11 @@ class KidsPartyGameState: ObservableObject {
         players.max(by: { $0.totalScore < $1.totalScore })
     }
     
+    var tiedWinners: [KidsPartyPlayer] {
+        guard let maxScore = players.map({ $0.totalScore }).max() else { return [] }
+        return players.filter { $0.totalScore == maxScore }
+    }
+    
     var sortedPlayers: [KidsPartyPlayer] {
         players.sorted { $0.totalScore > $1.totalScore }
     }
@@ -244,6 +303,7 @@ struct KidsPartyPlayer: Identifiable {
     var emoji: String
     var totalScore: Int = 0
     var wordsPlayed: [KidsPartyResult] = []
+    var networkId: String? = nil
     
     var color: Color {
         Color(hex: colorHex)

@@ -1,0 +1,1 @@
+2026-01-22 11:55:57.274 xcodebuild[22276:88539] [MT] IDEDistribution: -[IDEDistributionLogging _createLoggingBundleAtPath:]: Created bundle at path "/var/folders/fb/26sq945j14s_463_dmb6r55r0000gp/T/RackRushKids_2026-01-22_11-55-57.274.xcdistributionlogs".

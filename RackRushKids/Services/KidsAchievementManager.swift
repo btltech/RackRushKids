@@ -3,6 +3,7 @@ import SwiftUI
 import Combine
 
 /// Manages behavioral achievements and sticker rewards for the Kids app
+@MainActor
 class KidsAchievementManager: ObservableObject {
     static let shared = KidsAchievementManager()
     

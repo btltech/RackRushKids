@@ -52,8 +52,11 @@ struct AmbientParticlesView: View {
                     )
                 }
                 
-                withAnimation(.linear(duration: 20).repeatForever(autoreverses: false)) {
-                    phase = .pi * 2
+                // Only animate if Reduce Motion is disabled
+                if !AccessibilityConfig.prefersReducedMotion {
+                    withAnimation(.linear(duration: 20).repeatForever(autoreverses: false)) {
+                        phase = .pi * 2
+                    }
                 }
             }
         }
@@ -188,6 +191,8 @@ struct ShimmerModifier: ViewModifier {
                 .mask(content)
             )
             .onAppear {
+                // Only animate if Reduce Motion is disabled
+                guard !AccessibilityConfig.prefersReducedMotion else { return }
                 DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                     withAnimation(.linear(duration: duration).repeatForever(autoreverses: false)) {
                         phase = 1

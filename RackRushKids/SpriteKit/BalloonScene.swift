@@ -6,6 +6,7 @@ import SwiftUI
 class BalloonScene: SKScene {
     
     private var balloonTimer: Timer?
+    private var balloonsRunning: Bool = false
     private let balloonColors: [UIColor] = [
         .systemRed, .systemBlue, .systemGreen, .systemYellow,
         .systemOrange, .systemPink, .systemPurple, .systemCyan
@@ -21,8 +22,7 @@ class BalloonScene: SKScene {
     }
     
     override func willMove(from view: SKView) {
-        balloonTimer?.invalidate()
-        balloonTimer = nil
+        stopBalloons()
     }
     
     // MARK: - Touch Handling
@@ -67,26 +67,34 @@ class BalloonScene: SKScene {
     // MARK: - Public API
     
     func startBalloons() {
+        balloonsRunning = true
+        guard balloonTimer == nil else { return }
+        
         // Spawn a balloon every 2 seconds
         balloonTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
             self?.spawnBalloon()
         }
         
         // Spawn a few initial balloons
-        for i in 0..<3 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.5) { [weak self] in
-                self?.spawnBalloon()
+        if balloons.isEmpty {
+            for i in 0..<3 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.5) { [weak self] in
+                    self?.spawnBalloon()
+                }
             }
         }
     }
     
     func stopBalloons() {
+        balloonsRunning = false
         balloonTimer?.invalidate()
         balloonTimer = nil
     }
     
     private func spawnBalloon() {
-        let color = balloonColors.randomElement()!
+        guard balloonsRunning else { return }
+        
+        let color = balloonColors.randomElement() ?? .systemRed
         let startX = CGFloat.random(in: 40...(size.width - 40))
         let balloon = createBalloon(color: color)
         balloon.position = CGPoint(x: startX, y: -50)
@@ -308,7 +316,7 @@ class BalloonScene: SKScene {
         for _ in 0..<confettiCount {
             let size = CGFloat.random(in: 4...10)
             let confetti = SKShapeNode(rectOf: CGSize(width: size, height: size * 0.4), cornerRadius: 1)
-            confetti.fillColor = confettiColors.randomElement()!
+            confetti.fillColor = confettiColors.randomElement() ?? .systemYellow
             confetti.strokeColor = .clear
             confetti.position = position
             confetti.zPosition = 11
@@ -411,7 +419,7 @@ class BalloonScene: SKScene {
     
     private func createSparkles(at position: CGPoint, count: Int) {
         for i in 0..<count {
-            let color = sparkleColors.randomElement()!
+            let color = sparkleColors.randomElement() ?? .yellow
             
             DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.02) { [weak self] in
                 self?.createSingleSparkle(at: position, color: color)
@@ -516,21 +524,38 @@ class BalloonScene: SKScene {
 
 // MARK: - SwiftUI Wrapper
 struct SKBalloonView: View {
-    @State private var scene: BalloonScene?
+    @State private var scene: BalloonScene
+    @State private var hasSeenActivePhase = false
+    @Environment(\.scenePhase) private var scenePhase
+
+    init() {
+        _scene = State(initialValue: BalloonScene(size: UIScreen.main.bounds.size))
+    }
     
     var body: some View {
-        GeometryReader { geo in
-            if let scene = scene {
-                SpriteView(scene: scene, options: [.allowsTransparency])
-                    .ignoresSafeArea()
-                    .allowsHitTesting(true)  // Enable tapping to pop!
+        let isPaused = (scenePhase == .background) || (scenePhase == .inactive && hasSeenActivePhase)
+
+        SpriteView(scene: scene, isPaused: isPaused, options: [.allowsTransparency])
+            .ignoresSafeArea()
+            .allowsHitTesting(true)  // Enable tapping to pop!
+            .onAppear {
+                if scenePhase == .active {
+                    hasSeenActivePhase = true
+                }
+            }
+        .onChange(of: scenePhase) { _, newPhase in
+            switch newPhase {
+            case .background, .inactive:
+                scene.stopBalloons()
+            case .active:
+                hasSeenActivePhase = true
+                scene.startBalloons()
+            @unknown default:
+                break
             }
         }
-        .onAppear {
-            scene = BalloonScene(size: UIScreen.main.bounds.size)
-        }
         .onDisappear {
-            scene?.stopBalloons()
+            scene.stopBalloons()
         }
     }
 }
@@ -551,4 +576,3 @@ struct SKBalloonView: View {
             .font(.title)
     }
 }
-

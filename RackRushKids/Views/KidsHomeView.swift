@@ -2,27 +2,36 @@ import SwiftUI
 
 struct KidsHomeView: View {
     @ObservedObject var gameState: KidsGameState
+    @StateObject private var streakManager = KidsStreakManager.shared
+    @StateObject private var wotdManager = KidsWordOfTheDayManager.shared
     @State private var logoScale: CGFloat = 0.8
     @State private var logoOpacity: Double = 0
     @State private var buttonsOpacity: Double = 0
     @State private var showPersonaPicker = false
+    @State private var showAvatarPicker = false
+    @State private var showBadges = false
     
     var body: some View {
         ZStack {
             // Background handled by KidsContentView
             
             // GPU-accelerated ambient particles (SpriteKit Kids Mode)
-            SKKidsAmbientParticlesView()
+            SKAmbientParticlesView(isKidsMode: true)
                 .ignoresSafeArea()
-                .blendMode(.overlay)
             
             // Floating balloons with sparkles - tap balloons to pop, tap elsewhere for sparkles!
             SKBalloonView()
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Top bar
-                TopBar(gameState: gameState)
+                // Top bar with streak and avatar
+                HomeTopBar(gameState: gameState, showAvatarPicker: $showAvatarPicker, showBadges: $showBadges)
+                
+                // Streak badge
+                if streakManager.currentStreak > 0 {
+                    StreakBadge()
+                        .padding(.top, 8)
+                }
                 
                 Spacer()
                 
@@ -31,6 +40,10 @@ struct KidsHomeView: View {
                 
                 // Connection status
                 ConnectionStatusView(isConnected: gameState.isConnected)
+                
+                // Word of the Day card (collapsed)
+                WordOfTheDayCard()
+                    .padding(.top, 16)
                 
                 Spacer()
                 
@@ -49,13 +62,34 @@ struct KidsHomeView: View {
                     .transition(.move(edge: .top).combined(with: .opacity))
                     .zIndex(10)
             }
+            
+            // Streak celebration overlay
+            StreakCelebration()
+            
+            // Word of the Day popup (on first launch of day)
+            WordOfTheDayPopup()
+            
+            // New badge popup
+            NewBadgePopup()
         }
         .sheet(isPresented: $showPersonaPicker) {
             PersonaPickerSheet(gameState: gameState)
         }
+        .sheet(isPresented: $showAvatarPicker) {
+            AvatarPickerView()
+        }
+        .sheet(isPresented: $showBadges) {
+            BadgeCollectionView()
+        }
         .onAppear {
             // Connect on appear
             gameState.connect()
+            
+            // Start session tracking
+            KidsStatsManager.shared.startSession()
+            
+            // Check word of the day
+            wotdManager.checkForNewWord()
             
             // Animate in
             withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.1)) {
@@ -66,10 +100,65 @@ struct KidsHomeView: View {
                 buttonsOpacity = 1.0
             }
         }
+        .onDisappear {
+            KidsStatsManager.shared.endSession()
+        }
     }
 }
 
-// MARK: - Sub-views for KidsHomeView
+// MARK: - Home Top Bar with Avatar and Badges
+struct HomeTopBar: View {
+    @ObservedObject var gameState: KidsGameState
+    @ObservedObject var avatarManager = KidsAvatarManager.shared
+    @Binding var showAvatarPicker: Bool
+    @Binding var showBadges: Bool
+    
+    var body: some View {
+        HStack {
+            // Avatar button
+            Button(action: { showAvatarPicker = true }) {
+                Text(avatarManager.selectedAvatar.emoji)
+                    .font(.system(size: 28))
+                    .frame(width: 44, height: 44)
+                    .background(KidsTheme.surface)
+                    .clipShape(Circle())
+            }
+            
+            // Badges button
+            Button(action: { showBadges = true }) {
+                HStack(spacing: 4) {
+                    Text("🏅")
+                        .font(.system(size: 16))
+                    Text("\(KidsBadgeManager.shared.unlockedBadgeIds.count)")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(KidsTheme.surface)
+                .clipShape(Capsule())
+            }
+            
+            Spacer()
+            
+            // Hint coins
+            HintCoinBadge()
+            
+            Button(action: { gameState.screen = .settings }) {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(KidsTheme.textSecondary)
+                    .frame(width: 44, height: 44)
+                    .background(KidsTheme.surface)
+                    .clipShape(Circle())
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+    }
+}
+
+// MARK: - Sub-views for KidsHomeView (Legacy TopBar removed)
 struct TopBar: View {
     @ObservedObject var gameState: KidsGameState
     var body: some View {
@@ -95,7 +184,7 @@ struct LogoView: View {
     var body: some View {
         VStack(spacing: 12) {
             VStack(spacing: -6) {
-                Text("WORD")
+                Text("RACK")
                     .font(.system(size: 56, weight: .black, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
@@ -284,8 +373,11 @@ struct AgeGroupButton: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color.white.opacity(0.3) : Color.white.opacity(0.1), lineWidth: 1)
+                    .stroke(isSelected ? Color.white.opacity(0.5) : Color.white.opacity(0.1), lineWidth: isSelected ? 2 : 1)
             )
+            .shadow(color: isSelected ? Color(hex: "667eea").opacity(0.5) : .clear, radius: 8, y: 2)
+            .scaleEffect(isSelected ? 1.05 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
         }
     }
 }
@@ -304,12 +396,27 @@ struct MenuButton: View {
             action()
         }) {
             HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.system(size: 20, weight: .semibold))
+                // Show lock icon when disabled
+                if !isEnabled {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 20, weight: .semibold))
+                } else {
+                    Image(systemName: icon)
+                        .font(.system(size: 20, weight: .semibold))
+                }
                 
-                Text(label)
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .tracking(1)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(label)
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .tracking(1)
+                    
+                    // Show parent-only hint when disabled
+                    if !isEnabled {
+                        Text("Parent Only")
+                            .font(.system(size: 10, weight: .medium, design: .rounded))
+                            .opacity(0.7)
+                    }
+                }
             }
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
@@ -489,38 +596,83 @@ struct DailyChallengeCard: View {
                         Text(gameState.hasCompletedDaily ? "Challenge Done! ✨" : "Today's Secret Letters")
                             .font(.system(size: 18, weight: .bold, design: .rounded))
                             .foregroundColor(.white)
+                        
+                        // Sticker reward hint
+                        if !gameState.hasCompletedDaily {
+                            HStack(spacing: 4) {
+                                Image(systemName: "star.fill")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(Color(hex: "FFD700"))
+                                Text("Earn a sticker when complete!")
+                                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                                    .foregroundColor(Color(hex: "FFD700").opacity(0.8))
+                            }
+                        }
                     }
                     
                     Spacer()
                     
-                    Text(gameState.hasCompletedDaily ? "✅" : "🎁")
-                        .font(.system(size: 32))
+                    // Progress ring or completion checkmark
+                    ZStack {
+                        Circle()
+                            .stroke(Color.white.opacity(0.2), lineWidth: 4)
+                            .frame(width: 50, height: 50)
+                        
+                        if gameState.hasCompletedDaily {
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 50, height: 50)
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 22, weight: .bold))
+                                .foregroundColor(.white)
+                        } else {
+                            Circle()
+                                .trim(from: 0, to: 0.0) // 0% progress before playing
+                                .stroke(KidsTheme.playButtonGradient, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                                .frame(width: 50, height: 50)
+                                .rotationEffect(.degrees(-90))
+                            Text("🎁")
+                                .font(.system(size: 24))
+                        }
+                    }
                 }
                 
                 if !gameState.hasCompletedDaily {
+                    // Letter preview
                     HStack(spacing: 8) {
                         ForEach(gameState.todayDailyChallenge?.letters ?? [], id: \.self) { letter in
                             Text(letter)
                                 .font(.system(size: 14, weight: .bold, design: .rounded))
-                                .frame(width: 30, height: 30)
+                                .foregroundColor(.white)
+                                .frame(width: 32, height: 32)
                                 .background(Color.white.opacity(0.2))
                                 .clipShape(RoundedRectangle(cornerRadius: 6))
                         }
+                        
+                        Spacer()
+                        
+                        // Play hint
+                        Text("TAP TO PLAY")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundColor(.white.opacity(0.6))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Capsule().fill(Color.white.opacity(0.1)))
                     }
                 }
             }
             .padding(20)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.white.opacity(0.1))
+                    .fill(gameState.hasCompletedDaily ? Color.green.opacity(0.15) : Color.white.opacity(0.1))
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                            .stroke(gameState.hasCompletedDaily ? Color.green.opacity(0.3) : Color.white.opacity(0.1), lineWidth: 1)
                     )
             )
         }
         .disabled(gameState.hasCompletedDaily)
-        .opacity(gameState.hasCompletedDaily ? 0.8 : 1.0)
+        .opacity(gameState.hasCompletedDaily ? 0.9 : 1.0)
     }
 }
 

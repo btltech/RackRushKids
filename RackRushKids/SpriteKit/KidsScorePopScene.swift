@@ -18,7 +18,7 @@ class KidsScorePopScene: SKScene {
     // MARK: - Public API
     
     func showScore(_ score: Int, at position: CGPoint) {
-        let color = funColors.randomElement()!
+        let color = funColors.randomElement() ?? .systemYellow
         
         // Big bouncy score
         let scoreText = score >= 0 ? "+\(score)" : "\(score)"
@@ -32,7 +32,7 @@ class KidsScorePopScene: SKScene {
         label.zPosition = 100
         
         // Fun emoji decoration
-        let emoji = ["⭐", "🌟", "✨", "💫", "🎉"].randomElement()!
+        let emoji = ["⭐", "🌟", "✨", "💫", "🎉"].randomElement() ?? "⭐"
         let emojiLabel = SKLabelNode(text: emoji)
         emojiLabel.fontSize = 28
         emojiLabel.position = CGPoint(x: 40, y: 5)
@@ -97,7 +97,7 @@ class KidsScorePopScene: SKScene {
             
             let sparkle = SKShapeNode(circleOfRadius: 6)
             sparkle.position = position
-            sparkle.fillColor = [color, .yellow, .white].randomElement()!
+            sparkle.fillColor = [color, .yellow, .white].randomElement() ?? color
             sparkle.strokeColor = .clear
             sparkle.alpha = 1.0
             sparkle.zPosition = 90
@@ -127,11 +127,13 @@ struct SKKidsScorePopView: View {
     @Binding var showPosition: CGPoint
     
     @State private var scene: KidsScorePopScene?
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some View {
+        let isPaused = scenePhase != .active
         GeometryReader { geo in
             if let scene = scene {
-                SpriteView(scene: scene, options: [.allowsTransparency])
+                SpriteView(scene: scene, isPaused: isPaused, options: [.allowsTransparency])
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
             }

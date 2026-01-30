@@ -3,6 +3,7 @@ import SwiftUI
 import Combine
 
 /// Manages daily challenge state for the Kids app
+@MainActor
 class KidsDailyChallengeManager: ObservableObject {
     static let shared = KidsDailyChallengeManager()
     
@@ -15,6 +16,14 @@ class KidsDailyChallengeManager: ObservableObject {
     @AppStorage("kidsLastChallengeDate") private var lastChallengeDateString: String = ""
     @AppStorage("kidsDailyChallengeBestScore") private var storedBestScore: Int = 0
     
+    // Access current age group from user settings
+    @AppStorage("kidsAgeGroup") private var ageGroupString: String = KidsAgeGroup.medium.rawValue
+    @AppStorage("kidsExtraChallengeEnabled") private var extraChallengeEnabled: Bool = false
+    
+    var selectedAgeGroup: KidsAgeGroup {
+        KidsAgeGroup(rawValue: ageGroupString) ?? .medium
+    }
+    
     private init() {
         loadTodayChallenge()
     }
@@ -24,7 +33,7 @@ class KidsDailyChallengeManager: ObservableObject {
     /// UTC calendar for consistent daily challenge across timezones
     private var utcCalendar: Calendar {
         var cal = Calendar(identifier: .gregorian)
-        cal.timeZone = TimeZone(identifier: "UTC")!
+        cal.timeZone = TimeZone(identifier: "UTC") ?? .current
         return cal
     }
     
@@ -59,52 +68,54 @@ class KidsDailyChallengeManager: ObservableObject {
         let daysSince1970 = Int(date.timeIntervalSince1970 / 86400)
         var generator = SeededRandomGenerator(seed: UInt64(daysSince1970))
         
-        // Generate 7 letters - kid-friendly (guaranteed 3-4 vowels)
-        let letters = generateKidFriendlyLetters(using: &generator)
+        // Generate letters based on age group
+        let letterCount = selectedAgeGroup.effectiveLetterCount(extraChallengeEnabled: extraChallengeEnabled)
+        let letters = generateKidFriendlyLetters(count: letterCount, using: &generator)
         
-        // Bonus tiles for kids (more frequent, but simpler)
-        let bonuses = generateKidBonuses(using: &generator)
+        // Bonus tiles - scale with letter count
+        let bonusCount = max(1, letterCount - 4)  // 1 for 5 letters, 2 for 6, 3 for 7
+        let bonuses = generateKidBonuses(count: bonusCount, maxIndex: letterCount, using: &generator)
         
         return DailyChallenge(
             id: "kids-daily-\(daysSince1970)",
             date: date,
             letters: letters,
             bonuses: bonuses,
-            participantCount: nil // Would require backend to track
+            participantCount: nil
         )
     }
     
-    private func generateKidFriendlyLetters(using generator: inout SeededRandomGenerator) -> [String] {
+    private func generateKidFriendlyLetters(count: Int, using generator: inout SeededRandomGenerator) -> [String] {
         let vowels = ["A", "E", "I", "O", "U"]
         let commonConsonants = ["B", "C", "D", "F", "G", "H", "L", "M", "N", "P", "R", "S", "T", "W"]
         
         var letters: [String] = []
         
-        // Guaranteed 4 vowels for kids
-        for _ in 0..<4 {
+        // Guaranteed vowels (scale with letter count: 2 for 5, 3 for 6, 4 for 7)
+        let vowelCount = max(2, count - 3)
+        for _ in 0..<vowelCount {
             letters.append(vowels[Int(generator.next() % UInt64(vowels.count))])
         }
         
         // Fill remaining with common consonants
-        for _ in 0..<3 {
+        let consonantCount = count - vowelCount
+        for _ in 0..<consonantCount {
             letters.append(commonConsonants[Int(generator.next() % UInt64(commonConsonants.count))])
         }
         
         return letters.shuffled(using: &generator)
     }
     
-    private func generateKidBonuses(using generator: inout SeededRandomGenerator) -> [BonusTile] {
+    private func generateKidBonuses(count: Int, maxIndex: Int, using generator: inout SeededRandomGenerator) -> [BonusTile] {
         var bonuses: [BonusTile] = []
         let bonusTypes = ["DL", "TL", "DW"]
         
-        // Kids get 3 bonus tiles for more fun
-        let count = 3
         var usedIndices = Set<Int>()
         
         for _ in 0..<count {
             var index: Int
             repeat {
-                index = Int(generator.next() % 7)
+                index = Int(generator.next() % UInt64(maxIndex))
             } while usedIndices.contains(index)
             
             usedIndices.insert(index)

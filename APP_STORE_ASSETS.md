@@ -118,10 +118,10 @@ Also suitable for: 5 and Under, 9-11
 ## 🔗 Required URLs
 
 ### Privacy Policy (Required for Kids apps)
-`https://wordplaykids.app/privacy` *(REQUIRED - must be COPPA compliant)*
+`https://playrackrush.com/privacy`
 
 ### Support URL
-`https://wordplaykids.app/support`
+`https://playrackrush.com/support`
 
 ---
 
@@ -134,12 +134,12 @@ This is an educational word game designed for children ages 4-12.
 - No user-generated content
 - No social features or chat
 - Parental gate (PIN) for settings
-- COPPA compliant - no data collection from children
+- COPPA compliant - no tracking; minimal data only for optional online matchmaking
 
 **Key features to test:**
 1. Age group selection adjusts difficulty
 2. Word dictionary is filtered for kid-appropriate content
 3. Parental controls require PIN
-4. Online play uses Game Center (Apple's age-verification)
+4. Online play is disabled by default and can be enabled by a parent
 
 **Test accounts:** Not required — Game Center handles authentication.

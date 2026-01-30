@@ -6,12 +6,21 @@ struct KidsParentalControlsView: View {
     @AppStorage("kidsParentalPIN") private var parentalPIN: String = ""
     @AppStorage("kidsOnlinePlayAllowed") private var onlinePlayAllowed: Bool = false
     @AppStorage("kidsOnlineDefinitionsEnabled") private var onlineDefinitionsEnabled: Bool = false
+    @AppStorage("kidsExtraChallengeEnabled") private var extraChallengeEnabled: Bool = false
+    @AppStorage("kidsHapticsEnabled") private var hapticsEnabled: Bool = true
+    @AppStorage("kidsPlaySoundsInSilentMode") private var playSoundsInSilentMode: Bool = false
+    
+    @ObservedObject private var featureFlags = KidsFeatureFlags.shared
     
     @State private var enteredPIN = ""
     @State private var newPIN = ""
     @State private var confirmPIN = ""
     @State private var pinError: String?
     @State private var isUnlocked = false
+    @State private var showingTrickyWords = false
+    @State private var showingProgressReport = false
+    @State private var showingPrivacyPolicy = false
+    @State private var showingSupport = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -155,6 +164,112 @@ struct KidsParentalControlsView: View {
             }
             .background(KidsTheme.surfaceCard)
             .clipShape(RoundedRectangle(cornerRadius: 14))
+
+            // Gameplay section (parent-only difficulty tweak)
+            Text("GAMEPLAY")
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundColor(KidsTheme.textMuted)
+                .tracking(1.5)
+
+            VStack(spacing: 0) {
+                toggleRow(
+                    icon: "bolt.fill",
+                    title: "Extra Challenge",
+                    subtitle: extraChallengeEnabled ? "Adds 1 extra letter (ages 7+)" : "Standard letter count",
+                    isOn: $extraChallengeEnabled
+                )
+            }
+            .background(KidsTheme.surfaceCard)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            
+            // Audio & Haptics section
+            Text("AUDIO & HAPTICS")
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundColor(KidsTheme.textMuted)
+                .tracking(1.5)
+            
+            VStack(spacing: 0) {
+                toggleRow(
+                    icon: "iphone.radiowaves.left.and.right",
+                    title: "Haptic Feedback",
+                    subtitle: hapticsEnabled ? "Vibrations on" : "Vibrations off",
+                    isOn: $hapticsEnabled
+                )
+                
+                Divider().background(Color.white.opacity(0.1))
+                
+                toggleRow(
+                    icon: "speaker.wave.2.fill",
+                    title: "Play in Silent Mode",
+                    subtitle: playSoundsInSilentMode ? "Ignores silent switch" : "Respects silent switch",
+                    isOn: $playSoundsInSilentMode
+                )
+                .onChange(of: playSoundsInSilentMode) { _, _ in
+                    KidsAudioManager.shared.refreshAudioSession()
+                }
+            }
+            .background(KidsTheme.surfaceCard)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            
+            // Education section (parent-only learning tools)
+            Text("EDUCATION")
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundColor(KidsTheme.textMuted)
+                .tracking(1.5)
+            
+            VStack(spacing: 0) {
+                Button(action: { showingProgressReport = true }) {
+                    linkRow(
+                        icon: "chart.bar.fill",
+                        label: "Progress Report",
+                        value: "View"
+                    )
+                }
+                
+                Divider().background(Color.white.opacity(0.1))
+                
+                Button(action: { showingTrickyWords = true }) {
+                    linkRow(
+                        icon: "book.fill",
+                        label: "Today's Words",
+                        value: featureFlags.trickyWordsEnabled ? "View" : "Coming Soon"
+                    )
+                }
+            }
+            .background(KidsTheme.surfaceCard)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .sheet(isPresented: $showingProgressReport) {
+                ParentProgressReportView()
+            }
+            .sheet(isPresented: $showingTrickyWords) {
+                TrickyWordsView()
+            }
+            
+            // Legal & Support section (parent-only external links)
+            Text("LEGAL & SUPPORT")
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundColor(KidsTheme.textMuted)
+                .tracking(1.5)
+            
+            VStack(spacing: 0) {
+                Button(action: { showingPrivacyPolicy = true }) {
+                    linkRow(icon: "hand.raised.fill", label: "Privacy Policy", value: "View")
+                }
+                
+                Divider().background(Color.white.opacity(0.1))
+                
+                Button(action: { showingSupport = true }) {
+                    linkRow(icon: "envelope.fill", label: "Support", value: "Contact")
+                }
+            }
+            .background(KidsTheme.surfaceCard)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .sheet(isPresented: $showingPrivacyPolicy) {
+                KidsMarkdownDocumentView(title: "Privacy Policy", resourceName: "PRIVACY_POLICY", fileExtension: "md")
+            }
+            .sheet(isPresented: $showingSupport) {
+                KidsMarkdownDocumentView(title: "Support", resourceName: "SUPPORT", fileExtension: "md")
+            }
             
             Button(action: { isUnlocked = false; enteredPIN = ""; pinError = nil }) {
                 Text("Lock")
@@ -189,6 +304,32 @@ struct KidsParentalControlsView: View {
             
             Toggle("", isOn: isOn)
                 .tint(Color(hex: "3a7bd5"))
+        }
+        .padding()
+    }
+    
+    private func linkRow(icon: String, label: String, value: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundColor(KidsTheme.textSecondary)
+                .frame(width: 28)
+            
+            Text(label)
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundColor(KidsTheme.textPrimary)
+            
+            Spacer()
+            
+            HStack(spacing: 4) {
+                Text(value)
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundColor(KidsTheme.textMuted)
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(KidsTheme.textMuted)
+            }
         }
         .padding()
     }

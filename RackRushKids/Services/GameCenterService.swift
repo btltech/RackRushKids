@@ -45,7 +45,9 @@ class GameCenterService: NSObject, ObservableObject {
     var onRoundStart: (() -> Void)?
     var onOpponentSubmitted: (() -> Void)?
     var onRoundEnd: ((RoundResultData) -> Void)?
+
     var onMatchEnd: ((String) -> Void)?  // winner: "you", "opp", "tie"
+    var onReconnectionUpdate: ((Bool, Double) -> Void)? // isReconnecting, timeRemaining
     
     enum MatchState: String {
         case idle
@@ -80,14 +82,18 @@ class GameCenterService: NSObject, ObservableObject {
     
     // Reconnection grace period
     private var reconnectionTimer: Timer?
-    private let reconnectionGraceSeconds: Double = 5.0
+    private let reconnectionGraceSeconds: Double = 15.0
     @Published var reconnectionTimeRemaining: Double = 0
     private var disconnectCount: Int = 0
     private let maxDisconnectsBeforeForfeit = 2
+
+    // Auto-disconnect after match end (cancelled on rematch)
+    private var pendingAutoDisconnectWorkItem: DispatchWorkItem?
     
     // Configurable match settings (set before finding match)
     var configuredLetterCount: Int = 8
     var configuredTotalRounds: Int = 7  // Default 7, can be set to 5 for younger kids
+    var configuredMinWordLength: Int = 2
     
     override private init() {
         super.init()
@@ -141,8 +147,6 @@ class GameCenterService: NSObject, ObservableObject {
         request.minPlayers = minPlayers
         request.maxPlayers = maxPlayers
         request.inviteMessage = "Let's play RackRush!"
-        // Set delegate to suppress warning (we handle async matchmaking, not invites)
-        request.recipientResponseHandler = { _, _ in }
         
         GKMatchmaker.shared().findMatch(for: request) { [weak self] match, error in
             Task { @MainActor in
@@ -211,6 +215,21 @@ class GameCenterService: NSObject, ObservableObject {
     
     private func startRound() {
         guard isHost else { return }
+
+        // Don't start rounds if we no longer have an active match.
+        guard currentMatch != nil else {
+            print("🎮 startRound ignored: no active match")
+            return
+        }
+        
+        // Idempotency guard: prevent starting if match already ended or if we recently started this round
+        switch matchState {
+        case .matched, .roundEnded, .idle, .opponentReconnecting:
+            break
+        default:
+            print("🎮 startRound ignored: match state is \(matchState)")
+            return
+        }
         
         // Reset idempotency guard for new round
         isEndingRound = false
@@ -252,7 +271,9 @@ class GameCenterService: NSObject, ObservableObject {
             letters: letters,
             bonuses: bonuses.map { GameData.BonusData(index: $0.index, type: $0.type) },
             roundNumber: currentRound,
-            endsAt: roundEndsAt
+            endsAt: roundEndsAt,
+            totalRounds: configuredTotalRounds,
+            minWordLength: configuredMinWordLength
         )
         sendData(data)
         
@@ -290,7 +311,7 @@ class GameCenterService: NSObject, ObservableObject {
         myWord = word.uppercased()
         
         // Validate and score locally
-        let validation = LocalDictionary.shared.validate(word, rack: letters)
+        let validation = LocalDictionary.shared.validate(word, rack: letters, minLength: configuredMinWordLength)
         myScore = validation.valid ? LocalScorer.shared.calculate(
             word: word,
             rack: letters,
@@ -406,17 +427,24 @@ class GameCenterService: NSObject, ObservableObject {
         }
         
         onMatchEnd?(matchWinner ?? "tie")
-        
-        // Clean up after 10 seconds if no rematch requested
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) { [weak self] in
+
+        // Clean up after 10 seconds if no rematch requested.
+        // Important: cancel this work if a rematch begins, and only run if we're still in matchEnded.
+        pendingAutoDisconnectWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
+            guard self.matchState == .matchEnded else { return }
             if !self.isRematchRequested && !self.opponentRematchRequested {
                 self.disconnect()
             }
         }
+        pendingAutoDisconnectWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10.0, execute: workItem)
     }
     
     func resetForRematch() {
+        pendingAutoDisconnectWorkItem?.cancel()
+        pendingAutoDisconnectWorkItem = nil
         currentRound = 0
         letters = []
         bonuses = []
@@ -439,6 +467,8 @@ class GameCenterService: NSObject, ObservableObject {
     
     func requestRematch() {
         guard matchState == .matchEnded else { return }
+        pendingAutoDisconnectWorkItem?.cancel()
+        pendingAutoDisconnectWorkItem = nil
         isRematchRequested = true
         sendData(GameData(type: .rematchRequest))
         
@@ -449,6 +479,8 @@ class GameCenterService: NSObject, ObservableObject {
     
     func acceptRematch() {
         guard opponentRematchRequested else { return }
+        pendingAutoDisconnectWorkItem?.cancel()
+        pendingAutoDisconnectWorkItem = nil
         sendData(GameData(type: .rematchRequest)) // Send confirmation
         
         // Both want rematch!
@@ -483,6 +515,12 @@ class GameCenterService: NSObject, ObservableObject {
                let receivedBonuses = data.bonuses,
                let roundNum = data.roundNumber,
                let endsAt = data.endsAt {
+                if let totalRounds = data.totalRounds {
+                    configuredTotalRounds = totalRounds
+                }
+                if let minWordLength = data.minWordLength {
+                    configuredMinWordLength = minWordLength
+                }
                 currentRound = roundNum
                 letters = receivedLetters
                 bonuses = receivedBonuses.map { ($0.index, $0.type) }
@@ -563,6 +601,8 @@ class GameCenterService: NSObject, ObservableObject {
     // MARK: - Cleanup
     
     func disconnect() {
+        pendingAutoDisconnectWorkItem?.cancel()
+        pendingAutoDisconnectWorkItem = nil
         roundTimer?.invalidate()
         currentMatch?.disconnect()
         currentMatch = nil
@@ -571,6 +611,8 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     private func resetMatchData() {
+        pendingAutoDisconnectWorkItem?.cancel()
+        pendingAutoDisconnectWorkItem = nil
         opponentName = ""
         opponentId = ""
         isHost = false
@@ -644,6 +686,7 @@ extension GameCenterService: GKMatchDelegate {
                     self.reconnectionTimeRemaining = 0
                     self.matchState = .playing
                     self.error = nil
+                    self.onReconnectionUpdate?(false, 0)
                 }
             case .disconnected:
                 print("⚠️ Player disconnected: \(player.displayName)")
@@ -660,6 +703,7 @@ extension GameCenterService: GKMatchDelegate {
                 self.matchState = .opponentReconnecting
                 self.reconnectionTimeRemaining = self.reconnectionGraceSeconds
                 self.error = "Opponent disconnected. Waiting for reconnection..."
+                self.onReconnectionUpdate?(true, self.reconnectionTimeRemaining)
                 
                 // Pause round timer during grace period
                 self.roundTimer?.invalidate()
@@ -674,6 +718,7 @@ extension GameCenterService: GKMatchDelegate {
                         }
                         
                         self.reconnectionTimeRemaining -= 0.1
+                        self.onReconnectionUpdate?(true, self.reconnectionTimeRemaining)
                         
                         if self.reconnectionTimeRemaining <= 0 {
                             timer.invalidate()
@@ -696,6 +741,7 @@ extension GameCenterService: GKMatchDelegate {
         matchWinner = "you"  // Win by forfeit
         matchState = .matchEnded
         onMatchEnd?("you")
+        onReconnectionUpdate?(false, 0)
         print("🏆 You win by forfeit!")
     }
     
@@ -725,6 +771,8 @@ struct GameData: Codable {
     var score: Int?
     var roundNumber: Int?
     var endsAt: Int?
+    var totalRounds: Int?
+    var minWordLength: Int?
     var roundResult: RoundResultPayload?
     
     struct BonusData: Codable {

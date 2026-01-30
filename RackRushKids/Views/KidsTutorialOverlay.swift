@@ -11,11 +11,32 @@ struct KidsTutorialOverlay: View {
             backgroundLayer
             
             VStack(spacing: 30) {
+                // Skip button at top
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        KidsAudioManager.shared.playNavigation()
+                        withAnimation { isShowing = false }
+                    }) {
+                        Text("Skip")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.white.opacity(0.15))
+                            .clipShape(Capsule())
+                    }
+                    .padding(.trailing, 24)
+                    .padding(.top, 50)
+                }
+                
                 Spacer()
                 
                 tutorialContent
+                    .allowsHitTesting(false) // Let touches pass through
                 
                 animationDemo
+                    .allowsHitTesting(false) // Let touches pass through
                 
                 Spacer()
                 
@@ -31,9 +52,7 @@ struct KidsTutorialOverlay: View {
     
     private var backgroundLayer: some View {
         Color.black.opacity(0.7).ignoresSafeArea()
-            .onTapGesture {
-                withAnimation { isShowing = false }
-            }
+            .allowsHitTesting(false) // Let touches pass to game
     }
     
     private var tutorialContent: some View {

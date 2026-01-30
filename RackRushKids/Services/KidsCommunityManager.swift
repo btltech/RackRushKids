@@ -3,6 +3,7 @@ import Combine
 
 /// Manages safe, deterministic community features for Kids mode.
 /// Provides a "Global Word Counter" that grows throughout the day.
+@MainActor
 class KidsCommunityManager: ObservableObject {
     static let shared = KidsCommunityManager()
     
@@ -13,13 +14,17 @@ class KidsCommunityManager: ObservableObject {
     private let dailyTarget = 15_000  // Target words per day
     
     private init() {
-        updateCount()
+        Task { @MainActor in
+            updateCount()
+        }
         startTimer()
     }
     
     private func startTimer() {
         timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
-            self?.updateCount()
+            Task { @MainActor in
+                self?.updateCount()
+            }
         }
     }
     

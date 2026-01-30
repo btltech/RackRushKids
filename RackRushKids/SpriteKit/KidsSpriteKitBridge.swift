@@ -288,11 +288,13 @@ struct SKBennyView: View {
 // Rainbow confetti for kids
 struct SKKidsConfettiView: View {
     @State private var scene: ConfettiScene?
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some View {
+        let isPaused = scenePhase != .active
         GeometryReader { geo in
             if let scene = scene {
-                SpriteView(scene: scene, options: [.allowsTransparency])
+                SpriteView(scene: scene, isPaused: isPaused, options: [.allowsTransparency])
                     .ignoresSafeArea()
             }
         }
@@ -308,11 +310,13 @@ struct SKKidsConfettiView: View {
 // Kids ambient particles (softer colors)
 struct SKKidsAmbientParticlesView: View {
     @State private var scene: AmbientParticleScene?
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some View {
+        let isPaused = scenePhase != .active
         GeometryReader { geo in
             if let scene = scene {
-                SpriteView(scene: scene, options: [.allowsTransparency])
+                SpriteView(scene: scene, isPaused: isPaused, options: [.allowsTransparency])
                     .ignoresSafeArea()
             }
         }

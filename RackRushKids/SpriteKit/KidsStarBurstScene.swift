@@ -225,11 +225,13 @@ struct SKKidsStarBurstView: View {
     var position: CGPoint? = nil
     
     @State private var scene: KidsStarBurstScene?
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some View {
+        let isPaused = scenePhase != .active
         GeometryReader { geo in
             if let scene = scene {
-                SpriteView(scene: scene, options: [.allowsTransparency])
+                SpriteView(scene: scene, isPaused: isPaused, options: [.allowsTransparency])
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
             }

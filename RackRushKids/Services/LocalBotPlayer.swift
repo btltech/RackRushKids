@@ -17,18 +17,19 @@ class LocalBotPlayer {
     init(name: String, skillLevel: Double) {
         self.id = "bot-\(UUID().uuidString)"
         self.name = name
-        self.skillLevel = skillLevel
+        // Clamp skillLevel to valid 0.0-1.0 range
+        self.skillLevel = max(0.0, min(1.0, skillLevel))
     }
     
     /// Schedule bot submission with callback
-    func scheduleSubmission(letters: [String], bonuses: [(index: Int, type: String)], onSubmit: @escaping (String, Int) -> Void) {
+    func scheduleSubmission(letters: [String], bonuses: [(index: Int, type: String)], minLength: Int = 2, onSubmit: @escaping (String, Int) -> Void) {
         let delay = getDelay()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             guard let self = self else { return }
             
             // Find valid words using local dictionary
-            let validWords = LocalDictionary.shared.findValidWords(letters: letters)
+            let validWords = LocalDictionary.shared.findValidWords(letters: letters, minLength: minLength)
             
             if validWords.isEmpty {
                 onSubmit("", 0)
@@ -58,11 +59,14 @@ class LocalBotPlayer {
         let total = scoredWords.count
         guard total > 0 else { return ("", 0, 0) }
         
+        // Safety: if only one word, return it
+        if total == 1 { return scoredWords[0] }
+        
         // Map skillLevel (0.0-1.0) to an index. 
         // 1.0 = index 0 (best word), 0.0 = index total-1 (worst word)
         // Add some randomness so it's not perfect
         let baseIndex = Int(Double(total - 1) * (1.0 - skillLevel))
-        let variance = Int(Double(total) * 0.2) // 20% variance
+        let variance = max(1, Int(Double(total) * 0.2)) // 20% variance, min 1
         let minIdx = max(0, baseIndex - variance)
         let maxIdx = min(total - 1, baseIndex + variance)
         
@@ -101,15 +105,15 @@ class LocalBotPlayer {
     ]
     
     static func generateRandomName() -> String {
-        let adj = adjectives.randomElement()!
-        let noun = nouns.randomElement()!
+        let adj = adjectives.randomElement() ?? "Swift"
+        let noun = nouns.randomElement() ?? "Fox"
         let num = Int.random(in: 0...99)
         return "\(adj)\(noun)\(num) (Bot)"
     }
     
     static func generateKidsName() -> String {
-        let adj = kidsAdjectives.randomElement()!
-        let noun = kidsNouns.randomElement()!
+        let adj = kidsAdjectives.randomElement() ?? "Happy"
+        let noun = kidsNouns.randomElement() ?? "Panda"
         return "\(adj)\(noun)"
     }
 }

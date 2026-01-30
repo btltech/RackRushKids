@@ -1,0 +1,6 @@
+2026-01-22 11:53:22.163 xcodebuild[19495:78271] [MT] IDEDistribution: -[IDEDistributionLogging _createLoggingBundleAtPath:]: Created bundle at path "/var/folders/fb/26sq945j14s_463_dmb6r55r0000gp/T/RackRushKids_2026-01-22_11-53-22.162.xcdistributionlogs".
+2026-01-22 11:53:36.319 xcodebuild[19495:78271] Starting upload
+error: exportArchive The provided entity includes an attribute with a value that has already been used. The bundle version must be higher than the previously uploaded version: ‘5’. (ID: 3ed17767-bda1-4caf-afeb-b76c53ad7c8c).
+
+** EXPORT FAILED **
+

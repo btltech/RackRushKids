@@ -3,6 +3,7 @@ import SocketIO
 
 // MARK: - Kids Socket Service
 /// Connects to server for safe kids-only online matchmaking
+@MainActor
 class KidsSocketService: ObservableObject {
     static let shared = KidsSocketService()
     
@@ -16,12 +17,14 @@ class KidsSocketService: ObservableObject {
     // Callbacks
     var onConnect: (() -> Void)?
     var onDisconnect: (() -> Void)?
-    var onMatchFound: ((_ roomId: String, _ opponent: String, _ letters: [String]) -> Void)?
-    var onRoundStart: ((_ round: Int, _ letters: [String], _ timer: Int) -> Void)?
+    var onError: ((_ message: String) -> Void)?
+    var onMatchFound: ((_ roomId: String, _ opponent: String) -> Void)?
+    var onRoundStart: ((_ round: Int, _ letters: [String], _ secondsRemaining: Int) -> Void)?
     var onOpponentSubmitted: (() -> Void)?
-    var onRoundResult: ((_ myWord: String, _ myScore: Int, _ oppWord: String, _ oppScore: Int, _ winner: String) -> Void)?
+    var onRoundResult: ((_ myWord: String, _ myScore: Int, _ oppWord: String, _ oppScore: Int, _ winner: String, _ myTotal: Int, _ oppTotal: Int, _ roundNumber: Int, _ totalRounds: Int, _ nextRoundStartsAt: Int?) -> Void)?
     var onMatchEnd: ((_ myTotal: Int, _ oppTotal: Int, _ winner: String) -> Void)?
-    var onOpponentLeft: (() -> Void)?
+    var onOpponentReconnecting: ((_ timeLeftSeconds: Int) -> Void)?
+    var onOpponentReconnected: (() -> Void)?
     
     // Server URL - use production for both DEBUG and RELEASE
     // (localhost:3000 is typically not running; Railway handles all matchmaking)
@@ -77,9 +80,9 @@ class KidsSocketService: ObservableObject {
         socket?.disconnect()
         manager = nil
         socket = nil
-        DispatchQueue.main.async {
-            self.isConnected = false
-        }
+        isInQueue = false
+        isConnected = false
+        onDisconnect?()
     }
     
     private func setupHandlers() {
@@ -139,53 +142,108 @@ class KidsSocketService: ObservableObject {
     
     private func handleMessage(type: String, data: [String: Any]) {
         switch type {
-        case "welcome":
-            print("[KidsSocket] Server welcomed us!")
+        case "error":
+            let message = data["message"] as? String ?? "Unknown error"
+            onError?(message)
+
+        case "queued":
+            isInQueue = true
             
         case "matchFound":
             isInQueue = false
             let roomId = data["roomId"] as? String ?? ""
             let opponent = (data["opponent"] as? [String: Any])?["name"] as? String ?? "Friend"
-            let letters = data["letters"] as? [String] ?? []
-            onMatchFound?(roomId, opponent, letters)
+            onMatchFound?(roomId, opponent)
             
         case "roundStart":
             let round = data["round"] as? Int ?? 1
             let letters = data["letters"] as? [String] ?? []
-            let timer = data["timer"] as? Int ?? 30
-            onRoundStart?(round, letters, timer)
+
+            // Server sends absolute `endsAt` + `durationMs` so clients can derive accurate remaining time.
+            let nowMs = Int(Date().timeIntervalSince1970 * 1000)
+            let endsAt = data["endsAt"] as? Int ?? 0
+            let durationMs = data["durationMs"] as? Int ?? 30000
+
+            let fallbackSeconds = max(1, Int((Double(durationMs) / 1000.0).rounded(.up)))
+            let secondsRemaining: Int
+            if endsAt > 0 {
+                secondsRemaining = max(0, Int((Double(endsAt - nowMs) / 1000.0).rounded(.up)))
+            } else {
+                secondsRemaining = fallbackSeconds
+            }
+
+            onRoundStart?(round, letters, secondsRemaining)
             
         case "opponentSubmitted":
             onOpponentSubmitted?()
             
         case "roundResult":
-            let submissions = data["submissions"] as? [[String: Any]] ?? []
-            var myWord = "", myScore = 0, oppWord = "", oppScore = 0
-            
-            for sub in submissions {
-                let isMe = sub["isMe"] as? Bool ?? false
-                let word = sub["word"] as? String ?? ""
-                let score = sub["score"] as? Int ?? 0
-                if isMe {
-                    myWord = word
-                    myScore = score
-                } else {
-                    oppWord = word
-                    oppScore = score
-                }
-            }
-            
+            let myWord = data["yourWord"] as? String ?? ""
+            let myScore = data["yourScore"] as? Int ?? 0
+            let oppWord = data["oppWord"] as? String ?? ""
+            let oppScore = data["oppScore"] as? Int ?? 0
             let winner = data["winner"] as? String ?? ""
-            onRoundResult?(myWord, myScore, oppWord, oppScore, winner)
-            
-        case "matchEnd":
-            let myTotal = data["myTotal"] as? Int ?? 0
-            let oppTotal = data["oppTotal"] as? Int ?? 0
+            let myTotal = data["yourTotalScore"] as? Int ?? 0
+            let oppTotal = data["oppTotalScore"] as? Int ?? 0
+            let roundNumber = data["roundNumber"] as? Int ?? 1
+            let totalRounds = data["totalRounds"] as? Int ?? 1
+            let nextRoundStartsAt = data["nextRoundStartsAt"] as? Int
+            onRoundResult?(myWord, myScore, oppWord, oppScore, winner, myTotal, oppTotal, roundNumber, totalRounds, nextRoundStartsAt)
+
+        case "matchResult":
+            let myTotal = data["yourTotalScore"] as? Int ?? 0
+            let oppTotal = data["oppTotalScore"] as? Int ?? 0
             let winner = data["winner"] as? String ?? ""
             onMatchEnd?(myTotal, oppTotal, winner)
-            
-        case "opponentLeft":
-            onOpponentLeft?()
+
+        case "opponentReconnecting":
+            let timeLeft = data["timeLeft"] as? Int ?? 0
+            onOpponentReconnecting?(timeLeft)
+
+        case "opponentReconnected":
+            onOpponentReconnected?()
+
+        case "stateSync":
+            // Best-effort resume based on the state snapshot.
+            let state = data["state"] as? String ?? ""
+            switch state {
+            case "match":
+                let round = data["round"] as? Int ?? 1
+                let letters = data["letters"] as? [String] ?? []
+                let nowMs = Int(Date().timeIntervalSince1970 * 1000)
+                let endsAt = data["endsAt"] as? Int ?? 0
+                let durationMs = data["durationMs"] as? Int ?? 30000
+                let fallbackSeconds = max(1, Int((Double(durationMs) / 1000.0).rounded(.up)))
+                let secondsRemaining: Int
+                if endsAt > 0 {
+                    secondsRemaining = max(0, Int((Double(endsAt - nowMs) / 1000.0).rounded(.up)))
+                } else {
+                    secondsRemaining = fallbackSeconds
+                }
+                onRoundStart?(round, letters, secondsRemaining)
+
+            case "roundResult":
+                let myWord = data["yourWord"] as? String ?? ""
+                let myScore = data["yourScore"] as? Int ?? 0
+                let oppWord = data["oppWord"] as? String ?? ""
+                let oppScore = data["oppScore"] as? Int ?? 0
+                let winner = data["winner"] as? String ?? ""
+                let myTotal = data["yourTotalScore"] as? Int ?? 0
+                let oppTotal = data["oppTotalScore"] as? Int ?? 0
+                let roundNumber = data["roundNumber"] as? Int ?? 1
+                let totalRounds = data["totalRounds"] as? Int ?? 1
+                let nextRoundStartsAt = data["nextRoundStartsAt"] as? Int
+                onRoundResult?(myWord, myScore, oppWord, oppScore, winner, myTotal, oppTotal, roundNumber, totalRounds, nextRoundStartsAt)
+
+            case "matchResult":
+                let myTotal = data["yourTotalScore"] as? Int ?? 0
+                let oppTotal = data["oppTotalScore"] as? Int ?? 0
+                let winner = data["winner"] as? String ?? ""
+                onMatchEnd?(myTotal, oppTotal, winner)
+
+            default:
+                break
+            }
             
         default:
             print("[KidsSocket] Unknown message type: \(type)")
@@ -194,24 +252,26 @@ class KidsSocketService: ObservableObject {
     
     // MARK: - Actions
     
-    func joinKidsQueue(ageGroup: String, letterCount: Int, timerSeconds: Int) {
+    func joinKidsQueue(ageGroup: KidsAgeGroup) {
         guard isConnected else {
             print("[KidsSocket] Cannot queue - not connected")
             return
         }
         
         isInQueue = true
-        
+
         let kidsSettings: [String: Any] = [
-            "isKidsMode": true,
-            "ageGroup": ageGroup,
-            "letterCount": letterCount,
-            "timerSeconds": timerSeconds
+            "kidsMode": true,
+            "ageGroup": ageGroup.rawValue,
+            "timerSeconds": ageGroup.timerSeconds,
+            "letterCount": ageGroup.letterCount,
+            "minWordLength": ageGroup.minWordLength,
+            "roundsPerMatch": ageGroup.roundCount
         ]
-        
+
         let queueMessage: [String: Any] = [
             "type": "queue",
-            "mode": letterCount,
+            "mode": ageGroup.letterCount,
             "matchType": "pvp",
             "kidsMode": kidsSettings
         ]

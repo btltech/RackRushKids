@@ -11,6 +11,13 @@ actor KidsDictionaryService {
     private var localKidsDefinitions: [String: String] = [:]
     private var isLocalKidsLoaded = false
     
+    private let urlSession: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 10
+        config.timeoutIntervalForResource = 15
+        return URLSession(configuration: config)
+    }()
+    
     struct WordDefinition: Sendable {
         let word: String
         let phonetic: String?
@@ -69,6 +76,13 @@ actor KidsDictionaryService {
             return wordDef
         }
 
+        // Respect parental controls: if online definitions are disabled, do not make network calls.
+        // In this mode we only return bundled curated kids definitions.
+        let onlineDefinitionsEnabled = UserDefaults.standard.bool(forKey: "kidsOnlineDefinitionsEnabled")
+        guard onlineDefinitionsEnabled else {
+            return nil
+        }
+
         // Online definition lookup (with safety filtering)
         if let apiDef = await fetchFromDictionaryAPI(for: normalizedWord, originalWord: word),
            let def = await sanitizeForKids(apiDef, ageGroup: ageGroup) {
@@ -117,7 +131,7 @@ actor KidsDictionaryService {
         }
 
         do {
-            let (data, response) = try await URLSession.shared.data(from: url)
+            let (data, response) = try await urlSession.data(from: url)
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                 return nil
             }

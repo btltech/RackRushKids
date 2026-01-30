@@ -10,6 +10,7 @@
 		051ABC0EEBD024FA5E9B1245 /* LocalDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D15AE25CB86A3CD08EFB54 /* LocalDictionary.swift */; };
 		0CD65F06D34191E1CE26E904 /* KidsStarBurstScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AB47987B5464641C48C8E3 /* KidsStarBurstScene.swift */; };
 		0CE32D66A9F16F43616B4CFC /* KidsPartySetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B058186CA7A449B5224E53F /* KidsPartySetupView.swift */; };
+		1093A3B50BD1B8B79E960C92 /* TrickyWordsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01921829632C6A8F0996EC15 /* TrickyWordsView.swift */; };
 		1A0001 /* RackRushKidsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1001 /* RackRushKidsApp.swift */; };
 		1A0002 /* KidsContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1002 /* KidsContentView.swift */; };
 		1A0003 /* KidsTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1003 /* KidsTheme.swift */; };
@@ -30,6 +31,7 @@
 		1A0018 /* KidsMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1018 /* KidsMapView.swift */; };
 		1A0019 /* StickerBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1019 /* StickerBookView.swift */; };
 		1A0020 /* IslandNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1020 /* IslandNode.swift */; };
+		1A0031 /* IslandConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1031 /* IslandConfig.swift */; };
 		1A0021 /* KidsParentalControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1021 /* KidsParentalControlsView.swift */; };
 		1A0022 /* KidsDailyChallengeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1022 /* KidsDailyChallengeManager.swift */; };
 		1A0023 /* KidsAchievementManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1023 /* KidsAchievementManager.swift */; };
@@ -40,25 +42,44 @@
 		1A0028 /* ConfettiScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1028 /* ConfettiScene.swift */; };
 		1A0029 /* AmbientParticleScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1029 /* AmbientParticleScene.swift */; };
 		1A0030 /* BonusTileEffectScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1030 /* BonusTileEffectScene.swift */; };
-		218F5F2A83155B5EFD32211D /* kids_enable.txt in Resources */ = {isa = PBXBuildFile; fileRef = 934DECA95C43C08D4EEF44C1 /* kids_enable.txt */; };
+		1A0032 /* KidsProgressServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1032 /* KidsProgressServices.swift */; };
+		1A0033 /* KidsAvatarBadgeServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1033 /* KidsAvatarBadgeServices.swift */; };
+		1A0034 /* KidsProgressViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1034 /* KidsProgressViews.swift */; };
+		1A0035 /* ParentProgressReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1035 /* ParentProgressReportView.swift */; };
+		1A0036 /* PRIVACY_POLICY.md in Resources */ = {isa = PBXBuildFile; fileRef = 1A1036 /* PRIVACY_POLICY.md */; };
+		1A0037 /* SUPPORT.md in Resources */ = {isa = PBXBuildFile; fileRef = 1A1037 /* SUPPORT.md */; };
+		1A0038 /* KidsMarkdownDocumentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1038 /* KidsMarkdownDocumentView.swift */; };
 		2EEB7EE6441F1F73D413EFDE /* LocalBotPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49F908DD579B978EB39A09D /* LocalBotPlayer.swift */; };
+		300CE47FFA2D09382C834802 /* KidsFeatureFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D002824957E4066749B1E4C /* KidsFeatureFlags.swift */; };
 		3805395B4A38303FEDDD105D /* blocklist.txt in Resources */ = {isa = PBXBuildFile; fileRef = DFFF1E078F1715B23B84FABA /* blocklist.txt */; };
 		4966A5B97014ACED8038637B /* enable.txt in Resources */ = {isa = PBXBuildFile; fileRef = E0F394BB25D250ECCE442889 /* enable.txt */; };
+		KIDSENABLE001 /* kids_enable.txt in Resources */ = {isa = PBXBuildFile; fileRef = KIDSENABLEREF /* kids_enable.txt */; };
 		4F9F9D4BF190FEAFFD6CBB48 /* kids_definitions.json in Resources */ = {isa = PBXBuildFile; fileRef = 4D59EF97D7C409E7798CAB1A /* kids_definitions.json */; };
+		56BE66FF9EE7D6ABE93E70D4 /* TrickyWordsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAD3FC87AB59AAAA089DC752 /* TrickyWordsManager.swift */; };
 		7E94247BA6DA7183B72F9809 /* LocalScorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5850D7C1014D382106D6050D /* LocalScorer.swift */; };
 		8166B17126D5BB096B864178 /* KidsPartyGameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE27D1E5D5C1261ACA737000 /* KidsPartyGameState.swift */; };
 		847BB05C3B5C93E5B078B181 /* BalloonScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24463BAA2B5B5257038BC610 /* BalloonScene.swift */; };
 		9BB9FA173596EE340C8A58E8 /* KidsPartyViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A5C7A23245CD706623C6B9 /* KidsPartyViews.swift */; };
 		AA858B492DADE70E662A51CD /* KidsScorePopScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32CFB1757154AADF2A3D91D /* KidsScorePopScene.swift */; };
+		AA93C9517F3B24DB3418C99C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9F59BFBC2220689B06C0E935 /* PrivacyInfo.xcprivacy */; };
 		B1F583E085FDA44233B82750 /* GameCenterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9F605D618567D7D1EA53587 /* GameCenterService.swift */; };
+		C0FFEE000000000000000101 /* sfx_tap.wav in Resources */ = {isa = PBXBuildFile; fileRef = C0FFEE000000000000000001 /* sfx_tap.wav */; };
+		C0FFEE000000000000000102 /* sfx_submit.wav in Resources */ = {isa = PBXBuildFile; fileRef = C0FFEE000000000000000002 /* sfx_submit.wav */; };
+		C0FFEE000000000000000103 /* sfx_error.wav in Resources */ = {isa = PBXBuildFile; fileRef = C0FFEE000000000000000003 /* sfx_error.wav */; };
+		C0FFEE000000000000000104 /* sfx_win.wav in Resources */ = {isa = PBXBuildFile; fileRef = C0FFEE000000000000000004 /* sfx_win.wav */; };
+		C0FFEE000000000000000105 /* sfx_lose.wav in Resources */ = {isa = PBXBuildFile; fileRef = C0FFEE000000000000000005 /* sfx_lose.wav */; };
+		C0FFEE000000000000000106 /* sfx_countdown_beep.wav in Resources */ = {isa = PBXBuildFile; fileRef = C0FFEE000000000000000006 /* sfx_countdown_beep.wav */; };
+		C0FFEE000000000000000107 /* sfx_countdown_go.wav in Resources */ = {isa = PBXBuildFile; fileRef = C0FFEE000000000000000007 /* sfx_countdown_go.wav */; };
 		C78013627172F0966AE53160 /* RainbowTrailScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = F97DC2CBCBB69D4A4F7D6C23 /* RainbowTrailScene.swift */; };
 		F36D376165E4A3F9063B3F92 /* LocalRackGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EDEFAEF773D43FFB2955079 /* LocalRackGenerator.swift */; };
+		FD141421A5D4749CEAFFB20D /* Accessibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5339C7C2FCF704C1B14B990 /* Accessibility.swift */; };
 		FDFF44EB5DD86AFD3BC298CB /* SparkleTouchScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA7B04C09C47CED54D7ABA7 /* SparkleTouchScene.swift */; };
-		MPSVC001 /* MultipeerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = MPSVCREF /* MultipeerService.swift */; };
 		KNPV001 /* KidsNetworkPartyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = KNPVREF /* KidsNetworkPartyView.swift */; };
+		MPSVC001 /* MultipeerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = MPSVCREF /* MultipeerService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		01921829632C6A8F0996EC15 /* TrickyWordsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrickyWordsView.swift; sourceTree = "<group>"; };
 		1A1001 /* RackRushKidsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RackRushKidsApp.swift; sourceTree = "<group>"; };
 		1A1002 /* KidsContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsContentView.swift; sourceTree = "<group>"; };
 		1A1003 /* KidsTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsTheme.swift; sourceTree = "<group>"; };
@@ -79,6 +100,7 @@
 		1A1018 /* KidsMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsMapView.swift; sourceTree = "<group>"; };
 		1A1019 /* StickerBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerBookView.swift; sourceTree = "<group>"; };
 		1A1020 /* IslandNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IslandNode.swift; sourceTree = "<group>"; };
+		1A1031 /* IslandConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IslandConfig.swift; sourceTree = "<group>"; };
 		1A1021 /* KidsParentalControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsParentalControlsView.swift; sourceTree = "<group>"; };
 		1A1022 /* KidsDailyChallengeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsDailyChallengeManager.swift; sourceTree = "<group>"; };
 		1A1023 /* KidsAchievementManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsAchievementManager.swift; sourceTree = "<group>"; };
@@ -89,27 +111,51 @@
 		1A1028 /* ConfettiScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiScene.swift; sourceTree = "<group>"; };
 		1A1029 /* AmbientParticleScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientParticleScene.swift; sourceTree = "<group>"; };
 		1A1030 /* BonusTileEffectScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BonusTileEffectScene.swift; sourceTree = "<group>"; };
+		1A1032 /* KidsProgressServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsProgressServices.swift; sourceTree = "<group>"; };
+		1A1033 /* KidsAvatarBadgeServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsAvatarBadgeServices.swift; sourceTree = "<group>"; };
+		1A1034 /* KidsProgressViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsProgressViews.swift; sourceTree = "<group>"; };
+		1A1035 /* ParentProgressReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentProgressReportView.swift; sourceTree = "<group>"; };
+		1A1036 /* PRIVACY_POLICY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PRIVACY_POLICY.md; sourceTree = "<group>"; };
+		1A1037 /* SUPPORT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = SUPPORT.md; sourceTree = "<group>"; };
+		1A1038 /* KidsMarkdownDocumentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsMarkdownDocumentView.swift; sourceTree = "<group>"; };
 		1A2001 /* RackRushKids.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RackRushKids.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1B058186CA7A449B5224E53F /* KidsPartySetupView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsPartySetupView.swift; sourceTree = "<group>"; };
 		24463BAA2B5B5257038BC610 /* BalloonScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BalloonScene.swift; sourceTree = "<group>"; };
+		24A73593DAFBCE80AE717283 /* TrickyWordsManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrickyWordsManager.swift; sourceTree = "<group>"; };
+		3D002824957E4066749B1E4C /* KidsFeatureFlags.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsFeatureFlags.swift; sourceTree = "<group>"; };
+		455950832BECFF0CDBF3A417 /* TrickyWordsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrickyWordsView.swift; sourceTree = "<group>"; };
 		4D59EF97D7C409E7798CAB1A /* kids_definitions.json */ = {isa = PBXFileReference; includeInIndex = 1; path = kids_definitions.json; sourceTree = "<group>"; };
 		51AB47987B5464641C48C8E3 /* KidsStarBurstScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsStarBurstScene.swift; sourceTree = "<group>"; };
 		5850D7C1014D382106D6050D /* LocalScorer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LocalScorer.swift; sourceTree = "<group>"; };
 		68239FFF230380FD49B463F4 /* RackRushKids.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = RackRushKids.entitlements; sourceTree = "<group>"; };
 		73D15AE25CB86A3CD08EFB54 /* LocalDictionary.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LocalDictionary.swift; sourceTree = "<group>"; };
-		934DECA95C43C08D4EEF44C1 /* kids_enable.txt */ = {isa = PBXFileReference; includeInIndex = 1; path = kids_enable.txt; sourceTree = "<group>"; };
 		9EDEFAEF773D43FFB2955079 /* LocalRackGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LocalRackGenerator.swift; sourceTree = "<group>"; };
+		9F59BFBC2220689B06C0E935 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A38DB8F8F772401EB89DC515 /* TrickyWordsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TrickyWordsView.swift; path = RackRushKids/Views/TrickyWordsView.swift; sourceTree = "<group>"; };
+		A5339C7C2FCF704C1B14B990 /* Accessibility.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Accessibility.swift; sourceTree = "<group>"; };
+		A99379040E59A79E2210C1EF /* TrickyWordsManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TrickyWordsManager.swift; path = RackRushKids/Services/TrickyWordsManager.swift; sourceTree = "<group>"; };
 		B9F605D618567D7D1EA53587 /* GameCenterService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GameCenterService.swift; sourceTree = "<group>"; };
+		BAD3FC87AB59AAAA089DC752 /* TrickyWordsManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrickyWordsManager.swift; sourceTree = "<group>"; };
 		BDA7B04C09C47CED54D7ABA7 /* SparkleTouchScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SparkleTouchScene.swift; sourceTree = "<group>"; };
 		C0A5C7A23245CD706623C6B9 /* KidsPartyViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsPartyViews.swift; sourceTree = "<group>"; };
+		C0FFEE000000000000000001 /* sfx_tap.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = sfx_tap.wav; sourceTree = "<group>"; };
+		C0FFEE000000000000000002 /* sfx_submit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = sfx_submit.wav; sourceTree = "<group>"; };
+		C0FFEE000000000000000003 /* sfx_error.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = sfx_error.wav; sourceTree = "<group>"; };
+		C0FFEE000000000000000004 /* sfx_win.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = sfx_win.wav; sourceTree = "<group>"; };
+		C0FFEE000000000000000005 /* sfx_lose.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = sfx_lose.wav; sourceTree = "<group>"; };
+		C0FFEE000000000000000006 /* sfx_countdown_beep.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = sfx_countdown_beep.wav; sourceTree = "<group>"; };
+		C0FFEE000000000000000007 /* sfx_countdown_go.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = sfx_countdown_go.wav; sourceTree = "<group>"; };
+		D4760CDA254DE65026E79161 /* KidsFeatureFlags.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsFeatureFlags.swift; sourceTree = "<group>"; };
 		D49F908DD579B978EB39A09D /* LocalBotPlayer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LocalBotPlayer.swift; sourceTree = "<group>"; };
+		DCCB251563587FB5D67F7F44 /* KidsFeatureFlags.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KidsFeatureFlags.swift; path = RackRushKids/Services/KidsFeatureFlags.swift; sourceTree = "<group>"; };
 		DFFF1E078F1715B23B84FABA /* blocklist.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = blocklist.txt; sourceTree = "<group>"; };
 		E0F394BB25D250ECCE442889 /* enable.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = enable.txt; sourceTree = "<group>"; };
+		KIDSENABLEREF /* kids_enable.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = kids_enable.txt; sourceTree = "<group>"; };
 		EE27D1E5D5C1261ACA737000 /* KidsPartyGameState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsPartyGameState.swift; sourceTree = "<group>"; };
 		F32CFB1757154AADF2A3D91D /* KidsScorePopScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsScorePopScene.swift; sourceTree = "<group>"; };
 		F97DC2CBCBB69D4A4F7D6C23 /* RainbowTrailScene.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RainbowTrailScene.swift; sourceTree = "<group>"; };
-		MPSVCREF /* MultipeerService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MultipeerService.swift; sourceTree = "<group>"; };
 		KNPVREF /* KidsNetworkPartyView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KidsNetworkPartyView.swift; sourceTree = "<group>"; };
+		MPSVCREF /* MultipeerService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MultipeerService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -147,6 +193,10 @@
 				B92F1F96D5B43FAF2010798C /* Resources */,
 				1A4008 /* SpriteKit */,
 				68239FFF230380FD49B463F4 /* RackRushKids.entitlements */,
+				A5339C7C2FCF704C1B14B990 /* Accessibility.swift */,
+				9F59BFBC2220689B06C0E935 /* PrivacyInfo.xcprivacy */,
+				1A1036 /* PRIVACY_POLICY.md */,
+				1A1037 /* SUPPORT.md */,
 			);
 			path = RackRushKids;
 			sourceTree = "<group>";
@@ -176,6 +226,7 @@
 				1A1007 /* KidsResultView.swift */,
 				1A1008 /* KidsSettingsView.swift */,
 				1A1021 /* KidsParentalControlsView.swift */,
+				1A1038 /* KidsMarkdownDocumentView.swift */,
 				1A1013 /* KidsEffects.swift */,
 				1A1017 /* KidsTutorialOverlay.swift */,
 				1A1018 /* KidsMapView.swift */,
@@ -184,6 +235,11 @@
 				1B058186CA7A449B5224E53F /* KidsPartySetupView.swift */,
 				C0A5C7A23245CD706623C6B9 /* KidsPartyViews.swift */,
 				KNPVREF /* KidsNetworkPartyView.swift */,
+				A38DB8F8F772401EB89DC515 /* TrickyWordsView.swift */,
+				455950832BECFF0CDBF3A417 /* TrickyWordsView.swift */,
+				01921829632C6A8F0996EC15 /* TrickyWordsView.swift */,
+				1A1034 /* KidsProgressViews.swift */,
+				1A1035 /* ParentProgressReportView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -206,6 +262,14 @@
 				1A1022 /* KidsDailyChallengeManager.swift */,
 				1A1024 /* KidsCommunityManager.swift */,
 				1A1023 /* KidsAchievementManager.swift */,
+				DCCB251563587FB5D67F7F44 /* KidsFeatureFlags.swift */,
+				A99379040E59A79E2210C1EF /* TrickyWordsManager.swift */,
+				3D002824957E4066749B1E4C /* KidsFeatureFlags.swift */,
+				24A73593DAFBCE80AE717283 /* TrickyWordsManager.swift */,
+				D4760CDA254DE65026E79161 /* KidsFeatureFlags.swift */,
+				BAD3FC87AB59AAAA089DC752 /* TrickyWordsManager.swift */,
+				1A1032 /* KidsProgressServices.swift */,
+				1A1033 /* KidsAvatarBadgeServices.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -214,6 +278,7 @@
 			isa = PBXGroup;
 			children = (
 				1A1020 /* IslandNode.swift */,
+				1A1031 /* IslandConfig.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -238,9 +303,16 @@
 			isa = PBXGroup;
 			children = (
 				E0F394BB25D250ECCE442889 /* enable.txt */,
+				KIDSENABLEREF /* kids_enable.txt */,
 				DFFF1E078F1715B23B84FABA /* blocklist.txt */,
-				934DECA95C43C08D4EEF44C1 /* kids_enable.txt */,
 				4D59EF97D7C409E7798CAB1A /* kids_definitions.json */,
+				C0FFEE000000000000000001 /* sfx_tap.wav */,
+				C0FFEE000000000000000002 /* sfx_submit.wav */,
+				C0FFEE000000000000000003 /* sfx_error.wav */,
+				C0FFEE000000000000000004 /* sfx_win.wav */,
+				C0FFEE000000000000000005 /* sfx_lose.wav */,
+				C0FFEE000000000000000006 /* sfx_countdown_beep.wav */,
+				C0FFEE000000000000000007 /* sfx_countdown_go.wav */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -308,9 +380,19 @@
 			files = (
 				1A0009 /* Assets.xcassets in Resources */,
 				4966A5B97014ACED8038637B /* enable.txt in Resources */,
+				KIDSENABLE001 /* kids_enable.txt in Resources */,
 				3805395B4A38303FEDDD105D /* blocklist.txt in Resources */,
-				218F5F2A83155B5EFD32211D /* kids_enable.txt in Resources */,
 				4F9F9D4BF190FEAFFD6CBB48 /* kids_definitions.json in Resources */,
+				C0FFEE000000000000000101 /* sfx_tap.wav in Resources */,
+				C0FFEE000000000000000102 /* sfx_submit.wav in Resources */,
+				C0FFEE000000000000000103 /* sfx_error.wav in Resources */,
+				C0FFEE000000000000000104 /* sfx_win.wav in Resources */,
+				C0FFEE000000000000000105 /* sfx_lose.wav in Resources */,
+				C0FFEE000000000000000106 /* sfx_countdown_beep.wav in Resources */,
+				C0FFEE000000000000000107 /* sfx_countdown_go.wav in Resources */,
+				AA93C9517F3B24DB3418C99C /* PrivacyInfo.xcprivacy in Resources */,
+				1A0036 /* PRIVACY_POLICY.md in Resources */,
+				1A0037 /* SUPPORT.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -330,6 +412,7 @@
 				1A0007 /* KidsResultView.swift in Sources */,
 				1A0008 /* KidsSettingsView.swift in Sources */,
 				1A0021 /* KidsParentalControlsView.swift in Sources */,
+				1A0038 /* KidsMarkdownDocumentView.swift in Sources */,
 				1A0010 /* KidsWordFilter.swift in Sources */,
 				1A0011 /* KidsSocketService.swift in Sources */,
 				1A0013 /* KidsEffects.swift in Sources */,
@@ -341,6 +424,7 @@
 				1A0018 /* KidsMapView.swift in Sources */,
 				1A0019 /* StickerBookView.swift in Sources */,
 				1A0020 /* IslandNode.swift in Sources */,
+				1A0031 /* IslandConfig.swift in Sources */,
 				051ABC0EEBD024FA5E9B1245 /* LocalDictionary.swift in Sources */,
 				7E94247BA6DA7183B72F9809 /* LocalScorer.swift in Sources */,
 				F36D376165E4A3F9063B3F92 /* LocalRackGenerator.swift in Sources */,
@@ -364,6 +448,14 @@
 				8166B17126D5BB096B864178 /* KidsPartyGameState.swift in Sources */,
 				MPSVC001 /* MultipeerService.swift in Sources */,
 				KNPV001 /* KidsNetworkPartyView.swift in Sources */,
+				FD141421A5D4749CEAFFB20D /* Accessibility.swift in Sources */,
+				300CE47FFA2D09382C834802 /* KidsFeatureFlags.swift in Sources */,
+				56BE66FF9EE7D6ABE93E70D4 /* TrickyWordsManager.swift in Sources */,
+				1093A3B50BD1B8B79E960C92 /* TrickyWordsView.swift in Sources */,
+				1A0032 /* KidsProgressServices.swift in Sources */,
+				1A0033 /* KidsAvatarBadgeServices.swift in Sources */,
+				1A0034 /* KidsProgressViews.swift in Sources */,
+				1A0035 /* ParentProgressReportView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -497,12 +589,12 @@
 				CODE_SIGN_ENTITLEMENTS = RackRushKids/RackRushKids.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 8L5LTN9LMB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RackRushKids/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Word Play Kids";
+				INFOPLIST_KEY_CFBundleDisplayName = "RackRush Kids";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -530,12 +622,12 @@
 				CODE_SIGN_ENTITLEMENTS = RackRushKids/RackRushKids.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 8L5LTN9LMB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RackRushKids/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Word Play Kids";
+				INFOPLIST_KEY_CFBundleDisplayName = "RackRush Kids";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

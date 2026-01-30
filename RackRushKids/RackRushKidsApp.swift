@@ -4,27 +4,24 @@ import SwiftUI
 struct RackRushKidsApp: App {
     
     init() {
-        // Pre-warm services in background for faster responsiveness
-        DispatchQueue.global(qos: .userInitiated).async {
-            // Warm up audio manager (deferred initialization)
-            _ = KidsAudioManager.shared
-            
-            // Pre-warm TTS synthesizer so pronunciation is instant
-            Task { @MainActor in
-                KidsTTSService.shared.warmUp()
-            }
-        }
-        
-        // Pre-authenticate Game Center IMMEDIATELY on main thread
-        // This ensures the authentication handler is set up right away
-        Task { @MainActor in
-            GameCenterService.shared.authenticate()
-        }
+        // Defer all service initialization to onAppear to avoid @MainActor isolation issues
+        // GameCenter authentication is handled in KidsContentView.onAppear() via gameState.connect()
     }
     
     var body: some Scene {
         WindowGroup {
             KidsContentView()
+                .onAppear {
+                    // Pre-warm services on main thread
+                    // CRITICAL: KidsAudioManager uses @AppStorage which requires main thread access
+                    Task { @MainActor in
+                        // Warm up audio manager (uses @AppStorage, must be on main thread)
+                        KidsAudioManager.shared.prewarm()
+                        
+                        // TTS warm-up
+                        KidsTTSService.shared.warmUp()
+                    }
+                }
         }
     }
 }

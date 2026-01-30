@@ -113,32 +113,37 @@ class AmbientParticleScene: SKScene {
 // MARK: - SwiftUI Wrapper
 struct SKAmbientParticlesView: View {
     var isKidsMode: Bool = false
-    @State private var scene: AmbientParticleScene?
+    @State private var scene: AmbientParticleScene
+    @State private var hasSeenActivePhase = false
     @Environment(\.scenePhase) private var scenePhase
     
+    init(isKidsMode: Bool = false) {
+        self.isKidsMode = isKidsMode
+        let newScene = AmbientParticleScene(size: UIScreen.main.bounds.size)
+        newScene.isKidsMode = isKidsMode
+        _scene = State(initialValue: newScene)
+    }
+
     var body: some View {
-        GeometryReader { geo in
-            if let scene = scene {
-                SpriteView(scene: scene, options: [.allowsTransparency])
-                    .ignoresSafeArea()
+        let isPaused = (scenePhase == .background) || (scenePhase == .inactive && hasSeenActivePhase)
+
+        SpriteView(scene: scene, isPaused: isPaused, options: [.allowsTransparency])
+            .ignoresSafeArea()
+            .onChange(of: isKidsMode) { _, newValue in
+                let newScene = AmbientParticleScene(size: UIScreen.main.bounds.size)
+                newScene.isKidsMode = newValue
+                scene = newScene
             }
-        }
-        .onAppear {
-            let newScene = AmbientParticleScene(size: UIScreen.main.bounds.size)
-            newScene.isKidsMode = isKidsMode
-            scene = newScene
-        }
-        .onChange(of: scenePhase) { _, newPhase in
-            // Pause scene when backgrounded to prevent GPU errors
-            switch newPhase {
-            case .active:
-                scene?.isPaused = false
-            case .inactive, .background:
-                scene?.isPaused = true
-            @unknown default:
-                break
+            .onAppear {
+                if scenePhase == .active {
+                    hasSeenActivePhase = true
+                }
             }
-        }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    hasSeenActivePhase = true
+                }
+            }
     }
 }
 

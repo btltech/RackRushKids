@@ -45,7 +45,11 @@ struct KidsPartyCoordinator: View {
             }
         }
         .onAppear {
+            phase = .passDevice
             partyState.startNewRound()
+        }
+        .onDisappear {
+            partyState.stopTimer()
         }
     }
     
@@ -173,7 +177,7 @@ struct KidsPartyPlayView: View {
                         .stroke(KidsTheme.surface, lineWidth: 6)
                         .frame(width: 60, height: 60)
                     Circle()
-                        .trim(from: 0, to: CGFloat(partyState.timeRemaining) / 30)
+                        .trim(from: 0, to: CGFloat(partyState.timeRemaining) / CGFloat(max(1, partyState.roundDuration)))
                         .stroke(timerColor, style: StrokeStyle(lineWidth: 6, lineCap: .round))
                         .frame(width: 60, height: 60)
                         .rotationEffect(.degrees(-90))
@@ -191,12 +195,63 @@ struct KidsPartyPlayView: View {
             wordDisplay
             
             Spacer()
+
+            // Shuffle (reorder only; keeps bonus tiles attached)
+            VStack(spacing: 6) {
+                HStack {
+                    Spacer()
+                    let canShuffle = partyState.selectedIndices.isEmpty && !partyState.hasSubmitted && !partyState.sharedRack.isEmpty && !partyState.isNetworkGame
+                    Button(action: {
+                        guard canShuffle else { return }
+                        KidsAudioManager.shared.playPop()
+                        HapticManager.shared.selection()
+                        partyState.shuffleRack()
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "shuffle")
+                                .font(.system(size: 14, weight: .semibold))
+                            Text("Shuffle")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                        }
+                        .foregroundColor(KidsTheme.textSecondary)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(
+                            Capsule()
+                                .fill(KidsTheme.surface)
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                )
+                        )
+                        .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
+                    }
+                    .disabled(!canShuffle)
+                    .opacity(canShuffle ? 1 : 0.45)
+                    .accessibilityLabel("Shuffle letters")
+                    .accessibilityHint(partyState.isNetworkGame ? "Not available in network party" : "Reorders the letters without changing them")
+                }
+
+                if partyState.isNetworkGame {
+                    Text("Shuffle is local-only")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundColor(KidsTheme.textMuted)
+                        .accessibilityLabel("Shuffle is local only")
+                }
+            }
+            .padding(.horizontal, 24)
             
             // Letter rack
             letterRack
             
             // Actions
             actionButtons
+        }
+        .onChange(of: partyState.hasSubmitted) { _, isSubmitted in
+            // Auto-advance on timer-based submissions too (not just button tap)
+            if isSubmitted {
+                onSubmit()
+            }
         }
     }
     
@@ -225,32 +280,57 @@ struct KidsPartyPlayView: View {
     }
     
     private var letterRack: some View {
-        HStack(spacing: 12) {
+        LazyVGrid(
+            columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: min(partyState.sharedRack.count, 5)),
+            spacing: 10
+        ) {
             ForEach(Array(partyState.sharedRack.enumerated()), id: \.offset) { index, letter in
                 letterTile(letter: letter, index: index)
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 24)
     }
     
     private func letterTile(letter: String, index: Int) -> some View {
         let isSelected = partyState.selectedIndices.contains(index)
+        let selectionOrder = partyState.selectedIndices.firstIndex(of: index).map { $0 + 1 }
+        let bonusType = partyState.sharedBonuses.first(where: { $0.index == index })?.type
         
-        return Button(action: {
-            KidsAudioManager.shared.playPop()
-            partyState.toggleLetter(at: index)
-        }) {
-            Text(letter)
-                .font(.system(size: 30, weight: .bold, design: .rounded))
-                .foregroundColor(isSelected ? .white : KidsTheme.textPrimary)
-                .frame(width: 52, height: 64)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(isSelected ? KidsTheme.accent : KidsTheme.surface)
-                )
+        return LetterTile(
+            letter: letter,
+            isSelected: isSelected,
+            selectionOrder: selectionOrder,
+            action: {
+                KidsAudioManager.shared.playPop()
+                partyState.toggleLetter(at: index)
+            }
+        )
+        .overlay(alignment: .topLeading) {
+            if let bonusType {
+                Text(bonusType)
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(bonusColor(for: bonusType))
+                    .clipShape(Capsule())
+                    .padding(4)
+                    .allowsHitTesting(false)
+            }
         }
-        .scaleEffect(isSelected ? 1.1 : 1.0)
-        .animation(.spring(response: 0.3), value: isSelected)
+    }
+    
+    private func bonusColor(for type: String) -> Color {
+        switch type {
+        case "DL":
+            return Color(hex: "4ECDC4").opacity(0.9)
+        case "TL":
+            return Color(hex: "A78BFA").opacity(0.9)
+        case "DW":
+            return Color(hex: "FF8E53").opacity(0.9)
+        default:
+            return KidsTheme.surface
+        }
     }
     
     private var actionButtons: some View {
@@ -274,7 +354,6 @@ struct KidsPartyPlayView: View {
             Button(action: {
                 KidsAudioManager.shared.playSuccess()
                 partyState.submitWord()
-                onSubmit()
             }) {
                 HStack {
                     Text("Done!")
@@ -299,12 +378,53 @@ struct KidsPartyRoundView: View {
     let onContinue: () -> Void
     
     var body: some View {
+        let lastRound = partyState.roundHistory.last
+        let roundWinners: [KidsPartyPlayer] = {
+            guard let lastRound else { return [] }
+            guard let maxScore = lastRound.results.values.map({ $0.score }).max() else { return [] }
+            return partyState.players.filter { lastRound.results[$0.id]?.score == maxScore }
+        }()
+        
+        let roundWinnerScore: Int? = {
+            guard let lastRound else { return nil }
+            return lastRound.results.values.map({ $0.score }).max()
+        }()
+        
         VStack(spacing: 24) {
             Spacer()
             
             Text("🎉 Round Complete!")
                 .font(.system(size: 28, weight: .black, design: .rounded))
                 .foregroundColor(.white)
+
+            if !roundWinners.isEmpty {
+                VStack(spacing: 8) {
+                    if roundWinners.count == 1, let winner = roundWinners.first {
+                        HStack(spacing: 10) {
+                            Text("🏅")
+                                .font(.system(size: 26))
+                            Text("\(winner.name) wins!")
+                                .font(.system(size: 22, weight: .black, design: .rounded))
+                                .foregroundStyle(KidsTheme.partyGradient)
+                        }
+                    } else {
+                        Text("It's a tie!")
+                            .font(.system(size: 22, weight: .black, design: .rounded))
+                            .foregroundStyle(KidsTheme.partyGradient)
+
+                        Text(roundWinners.map { $0.name }.joined(separator: " & "))
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundColor(KidsTheme.textSecondary)
+                    }
+
+                    if let roundWinnerScore {
+                        Text("Top score: \(roundWinnerScore)")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundColor(KidsTheme.textMuted)
+                    }
+                }
+                .padding(.horizontal, 24)
+            }
             
             // Player results
             VStack(spacing: 12) {
@@ -363,18 +483,19 @@ struct KidsPartySummaryView: View {
     let onDismiss: () -> Void
     
     var body: some View {
+        let winners = partyState.tiedWinners
         VStack(spacing: 24) {
             Spacer()
             
             // Winner
-            if let winner = partyState.partyWinner {
+            if winners.count == 1, let winner = winners.first {
                 VStack(spacing: 16) {
                     Text("🏆")
                         .font(.system(size: 80))
                     
                     Text("WINNER!")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundColor(KidsTheme.textMuted)
+                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .foregroundStyle(KidsTheme.partyGradient)
                     
                     HStack(spacing: 12) {
                         Text(winner.emoji)
@@ -385,6 +506,32 @@ struct KidsPartySummaryView: View {
                     }
                     
                     Text("\(winner.totalScore) points!")
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundColor(KidsTheme.accent)
+                }
+            } else if winners.count > 1 {
+                VStack(spacing: 16) {
+                    Text("🏆")
+                        .font(.system(size: 80))
+                    
+                    Text("IT'S A TIE!")
+                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .foregroundStyle(KidsTheme.partyGradient)
+                    
+                    HStack(spacing: 18) {
+                        ForEach(winners) { winner in
+                            VStack(spacing: 6) {
+                                Text(winner.emoji)
+                                    .font(.system(size: 44))
+                                
+                                Text(winner.name)
+                                    .font(.system(size: 24, weight: .black, design: .rounded))
+                                    .foregroundColor(winner.color)
+                            }
+                        }
+                    }
+                    
+                    Text("\(winners.first?.totalScore ?? 0) points each!")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundColor(KidsTheme.accent)
                 }
@@ -448,6 +595,6 @@ struct KidsPartySummaryView: View {
 
 #Preview {
     let party = KidsPartyGameState()
-    party.setupParty(playerNames: ["Alex", "Sam"], ageGroup: .medium, rounds: 3)
+    party.setupParty(playerNames: ["Alex", "Sam"], ageGroup: .medium, rounds: 5)
     return KidsPartyCoordinator(partyState: party, gameState: KidsGameState())
 }

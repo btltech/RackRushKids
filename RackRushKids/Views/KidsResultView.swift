@@ -110,23 +110,71 @@ struct KidsResultView: View {
             .padding()
             .glassCard()
             
+            // Learning Tip - shows a better word the player could have made
+            if let tip = gameState.learningTip {
+                HStack(spacing: 12) {
+                    Image(systemName: "lightbulb.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(Color(hex: "FFD700"))
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Did you know?")
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                            .foregroundColor(Color(hex: "FFD700"))
+                        
+                        Text("You could have spelled **\(tip.word)** for \(tip.score) points!")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundColor(.white)
+                    }
+                    
+                    Spacer()
+                }
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color(hex: "FFD700").opacity(0.15))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(Color(hex: "FFD700").opacity(0.4), lineWidth: 1)
+                        )
+                )
+                .padding(.horizontal, 24)
+            }
+            
             Spacer()
             
-            // Next round button
-            Button(action: { gameState.nextRound() }) {
-                HStack {
-                    Text("Next Round")
-                    Image(systemName: "arrow.right")
+            if gameState.matchType == .bot {
+                // Next round button (bot matches only)
+                Button(action: { gameState.nextRound() }) {
+                    HStack {
+                        Text("Next Round")
+                        Image(systemName: "arrow.right")
+                    }
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(KidsTheme.playButtonGradient)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
+                .padding(.horizontal, 28)
+                .padding(.bottom, 32)
+            } else {
+                // Online rounds are started by the match host after results.
+                HStack(spacing: 10) {
+                    ProgressView()
+                        .tint(.white)
+                    Text("Next round starting...")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundColor(KidsTheme.textSecondary)
+                }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(KidsTheme.playButtonGradient)
+                .background(KidsTheme.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
+                .padding(.horizontal, 28)
+                .padding(.bottom, 32)
             }
-            .padding(.horizontal, 28)
-            .padding(.bottom, 32)
         }
         .overlay {
             // Star burst effect on wins
@@ -254,6 +302,20 @@ struct KidsMatchResultView: View {
                         .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundColor(KidsTheme.textSecondary)
                 }
+                
+                // Reward progress message - always show something earned
+                HStack(spacing: 6) {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(hex: "FFD700"))
+                    Text(isWinner ? "+1 Star earned!" : "+1 Star progress")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundColor(Color(hex: "FFD700"))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Capsule().fill(Color(hex: "FFD700").opacity(0.15)))
+                .padding(.top, 8)
             }
             
             Spacer()
@@ -377,8 +439,15 @@ struct KidsMatchResultView: View {
                 
                 Button(action: { gameState.goHome() }) {
                     Text("Settings & Home")
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundColor(KidsTheme.textMuted)
+                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .foregroundColor(KidsTheme.textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .background(Color.clear)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(KidsTheme.textMuted.opacity(0.5), lineWidth: 1)
+                        )
                 }
             }
             .padding(.horizontal, 28)
@@ -445,11 +514,17 @@ struct WordCard: View {
             
             if let def = definition {
                 Text(def)
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.8))
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundColor(Color(hex: "FFE066"))
                     .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .padding(.top, 4)
+                    .lineLimit(3)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.black.opacity(0.35))
+                    )
+                    .padding(.top, 6)
             }
         }
         .frame(maxWidth: .infinity)

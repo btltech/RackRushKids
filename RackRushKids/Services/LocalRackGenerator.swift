@@ -53,7 +53,7 @@ class LocalRackGenerator {
         while vowelCount < minVowels {
             // Replace a consonant with a vowel
             if let idx = letters.firstIndex(where: { !vowels.contains($0) && !rareLetters.contains($0) }) {
-                let vowel = ["A", "E", "I", "O", "U"].randomElement()!
+                let vowel = ["A", "E", "I", "O", "U"].randomElement() ?? "E"
                 letters[idx] = vowel
                 vowelCount += 1
             } else {
@@ -77,7 +77,7 @@ class LocalRackGenerator {
             } while usedIndices.contains(idx)
             usedIndices.insert(idx)
             
-            let type = bonusTypes.randomElement()!
+            let type = bonusTypes.randomElement() ?? "DL"
             bonuses.append((index: idx, type: type))
         }
         

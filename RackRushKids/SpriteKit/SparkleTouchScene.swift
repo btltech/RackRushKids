@@ -53,7 +53,7 @@ class SparkleTouchScene: SKScene {
     
     private func createSparkles(at position: CGPoint, count: Int = 8) {
         for i in 0..<count {
-            let color = sparkleColors.randomElement()!
+            let color = sparkleColors.randomElement() ?? .yellow
             createSingleSparkle(at: position, color: color, delay: Double(i) * 0.02)
         }
     }
@@ -133,11 +133,13 @@ struct SKSparkleTouchView: View {
     var allowInteraction: Bool = true
     
     @State private var scene: SparkleTouchScene?
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some View {
+        let isPaused = scenePhase != .active
         GeometryReader { geo in
             if let scene = scene {
-                SpriteView(scene: scene, options: [.allowsTransparency])
+                SpriteView(scene: scene, isPaused: isPaused, options: [.allowsTransparency])
                     .ignoresSafeArea()
                     .allowsHitTesting(allowInteraction)  // Allow touch-through when not interactive
             }

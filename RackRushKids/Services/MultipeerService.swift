@@ -5,6 +5,7 @@ import MultipeerConnectivity
 enum PartyMultipeerMessage: Codable {
     case playerJoined(name: String, colorHex: String)
     case playerLeft(peerId: String)
+    case lobbySync(players: [NetworkPartyPlayer])
     case gameSettings(letterCount: Int, rounds: Int)
     case startGame
     case roundStart(roundNumber: Int, rack: [String], bonuses: [(Int, String)])
@@ -15,7 +16,7 @@ enum PartyMultipeerMessage: Codable {
     // Codable custom implementation for tuple
     enum CodingKeys: String, CodingKey {
         case type, name, colorHex, peerId, letterCount, rounds
-        case roundNumber, rack, bonuses, playerId, word, score, time, isValid
+        case roundNumber, rack, bonuses, playerId, word, score, time, isValid, players
     }
     
     func encode(to encoder: Encoder) throws {
@@ -28,6 +29,9 @@ enum PartyMultipeerMessage: Codable {
         case .playerLeft(let peerId):
             try container.encode("playerLeft", forKey: .type)
             try container.encode(peerId, forKey: .peerId)
+        case .lobbySync(let players):
+            try container.encode("lobbySync", forKey: .type)
+            try container.encode(players, forKey: .players)
         case .gameSettings(let letterCount, let rounds):
             try container.encode("gameSettings", forKey: .type)
             try container.encode(letterCount, forKey: .letterCount)
@@ -66,6 +70,9 @@ enum PartyMultipeerMessage: Codable {
         case "playerLeft":
             let peerId = try container.decode(String.self, forKey: .peerId)
             self = .playerLeft(peerId: peerId)
+        case "lobbySync":
+            let players = try container.decode([NetworkPartyPlayer].self, forKey: .players)
+            self = .lobbySync(players: players)
         case "gameSettings":
             let letterCount = try container.decode(Int.self, forKey: .letterCount)
             let rounds = try container.decode(Int.self, forKey: .rounds)
@@ -128,6 +135,7 @@ final class MultipeerService: NSObject, ObservableObject {
     
     // MARK: - MultipeerConnectivity
     private let serviceType = "rackrush-party"
+    // Note: These are IUOs because they must be initialized in setup() before use
     private var peerID: MCPeerID!
     private var session: MCSession!
     private var advertiser: MCNearbyServiceAdvertiser?
@@ -135,6 +143,10 @@ final class MultipeerService: NSObject, ObservableObject {
     
     private var myName: String = ""
     private var myColorHex: String = ""
+    
+    var myId: String {
+        peerID?.displayName ?? ""
+    }
     
     // MARK: - Singleton
     static let shared = MultipeerService()
@@ -213,8 +225,14 @@ final class MultipeerService: NSObject, ObservableObject {
     func disconnect() {
         stopAll()
         session?.disconnect()
+        session = nil
+        peerID = nil
         connectedPeers = []
         lobbyPlayers = []
+        availableHosts = []
+        onMessageReceived = nil
+        onPlayerConnected = nil
+        onPlayerDisconnected = nil
         isConnected = false
     }
     
@@ -256,10 +274,8 @@ extension MultipeerService: MCSessionDelegate {
                 self.isConnected = true
                 self.onPlayerConnected?(peerID)
                 
-                // If hosting, send our player info
-                if self.isHosting {
-                    self.sendTo(peerID, message: .playerJoined(name: self.myName, colorHex: self.myColorHex))
-                }
+                // Always exchange player info on connect (host + joiners)
+                self.sendTo(peerID, message: .playerJoined(name: self.myName, colorHex: self.myColorHex))
                 
             case .notConnected:
                 print("🎮 Disconnected: \(peerID.displayName)")
@@ -267,6 +283,10 @@ extension MultipeerService: MCSessionDelegate {
                 self.lobbyPlayers.removeAll { $0.id == peerID.displayName }
                 self.isConnected = !self.connectedPeers.isEmpty
                 self.onPlayerDisconnected?(peerID)
+                
+                if self.isHosting {
+                    self.send(.lobbySync(players: self.lobbyPlayers))
+                }
                 
             case .connecting:
                 print("🎮 Connecting: \(peerID.displayName)")
@@ -288,6 +308,19 @@ extension MultipeerService: MCSessionDelegate {
                     let player = NetworkPartyPlayer(id: peerID.displayName, name: name, colorHex: colorHex)
                     if !self.lobbyPlayers.contains(where: { $0.id == player.id }) {
                         self.lobbyPlayers.append(player)
+                    }
+                    if self.isHosting {
+                        self.send(.lobbySync(players: self.lobbyPlayers))
+                    }
+                }
+                
+                // Handle lobby sync
+                if case .lobbySync(let players) = message {
+                    self.lobbyPlayers = players
+                    // Ensure we never lose self from the lobby list
+                    if !self.myId.isEmpty, !self.lobbyPlayers.contains(where: { $0.id == self.myId }) {
+                        let selfPlayer = NetworkPartyPlayer(id: self.myId, name: self.myName, colorHex: self.myColorHex, isHost: false, isReady: true)
+                        self.lobbyPlayers.insert(selfPlayer, at: 0)
                     }
                 }
                 
